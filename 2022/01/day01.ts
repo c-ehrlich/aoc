@@ -1,11 +1,20 @@
-import { arrayOfLinesDoubleSplit } from "../util/files";
+import fs from "fs";
 
-const input = arrayOfLinesDoubleSplit("01/input.txt");
+export function arrayOfLinesToNumDoubleSplit(file: string) {
+  var array = fs
+    .readFileSync(file)
+    .toString()
+    .split("\n\n")
+    .map((item) => item.split("\n").map((item) => parseInt(item)));
+  return array;
+}
+
+const input = arrayOfLinesToNumDoubleSplit("01/input.txt");
 
 export function solve01a(input: number[][]): number {
   const res = input.map((group) => group.reduce((acc, cur) => acc + cur, 0));
   const highest = res.sort((a, b) => a - b).pop();
-  return highest || -1;
+  return highest ?? -1;
 }
 
 export function solve01b(input: number[][]): number {
