@@ -1,7 +1,7 @@
 import fs from "fs";
 
 export function arrayOfLinesToNumDoubleSplit(file: string) {
-  var array = fs
+  const array = fs
     .readFileSync(file)
     .toString()
     .split("\n\n")
