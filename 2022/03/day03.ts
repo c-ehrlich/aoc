@@ -1,5 +1,7 @@
 import fs from "fs";
 
+// Part 1
+
 export function arrayOfLinesToSplitRucksacks(file: string) {
   const splitRucksacks = fs
     .readFileSync(file)
@@ -12,32 +14,34 @@ export function arrayOfLinesToSplitRucksacks(file: string) {
   return splitRucksacks;
 }
 
+const inputA = arrayOfLinesToSplitRucksacks("03/input.txt");
+
+export function solve03a(rucksacks: string[][]) {
+  let duplicates = [] as string[];
+  rucksacks.forEach((rucksack) => {
+    const [compartmentA, compartmentB] = rucksack;
+    const currentRucksackDuplicates = new Map<string, boolean>();
+    for (const char of compartmentA) {
+      if (compartmentB.includes(char)) {
+        currentRucksackDuplicates.set(char, true);
+      }
+    }
+    duplicates = duplicates.concat(
+      Array.from(currentRucksackDuplicates.keys())
+    );
+  });
+  const sum = duplicates.reduce((acc, cur) => acc + getLetterValue(cur), 0);
+  return sum;
+}
+
+// Part 2
+
 export function arrayOfLinesToRucksacks(file: string) {
   const rucksacks = fs.readFileSync(file).toString().split("\n");
   return rucksacks;
 }
 
-const inputA = arrayOfLinesToSplitRucksacks("03/input.txt");
 const inputB = arrayOfLinesToRucksacks("03/input.txt");
-
-export function solve03a(rucksacks: string[][]) {
-  let duplicates = [] as string[];
-  rucksacks.forEach((rucksack) => {
-    const itemsInFirstRucksack = new Map<string, boolean>();
-    const rucksackDuplicates = new Map<string, boolean>();
-    rucksack[0]
-      .split("")
-      .forEach((char) => itemsInFirstRucksack.set(char, true));
-    rucksack[1].split("").forEach((char) => {
-      if (itemsInFirstRucksack.get(char)) {
-        rucksackDuplicates.set(char, true);
-      }
-    });
-    duplicates = duplicates.concat(Array.from(rucksackDuplicates.keys()));
-  });
-  const sum = duplicates.reduce((acc, cur) => acc + getLetterValue(cur), 0);
-  return sum;
-}
 
 export function solve03b(rucksacks: string[]) {
   let sum = 0;
