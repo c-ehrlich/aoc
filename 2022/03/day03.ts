@@ -23,11 +23,13 @@ const inputB = arrayOfLinesToRucksacks("03/input.txt");
 export function solve03a(rucksacks: string[][]) {
   let duplicates = [] as string[];
   rucksacks.forEach((rucksack) => {
-    const items = new Map<string, boolean>();
+    const itemsInFirstRucksack = new Map<string, boolean>();
     const rucksackDuplicates = new Map<string, boolean>();
-    rucksack[0].split("").forEach((char) => items.set(char, true));
+    rucksack[0]
+      .split("")
+      .forEach((char) => itemsInFirstRucksack.set(char, true));
     rucksack[1].split("").forEach((char) => {
-      if (items.get(char)) {
+      if (itemsInFirstRucksack.get(char)) {
         rucksackDuplicates.set(char, true);
       }
     });
