@@ -8,7 +8,7 @@ enum RPSMove {
 export type RpsFormattedInput = [RPSMove, RPSMove][];
 
 export function arrayOfLinesToRpsInput(file: string) {
-  var array = fs
+  const array = fs
     .readFileSync(file)
     .toString()
     .split("\n")
