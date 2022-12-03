@@ -6,7 +6,6 @@ import {
   type RpsFormattedInput,
 } from "./day02";
 
-// The two tests marked with concurrent will be run in parallel
 describe("day02", () => {
   it("arrayOfLinesToRpsInput", () => {
     const fixtureData = arrayOfLinesToRpsInput("02/sample.txt");
