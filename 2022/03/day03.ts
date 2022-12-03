@@ -44,8 +44,7 @@ export function solve03b(rucksacks: string[]) {
     const badge = group[0]
       .split("")
       .filter(
-        (letter) =>
-          group[1].indexOf(letter) !== -1 && group[2].indexOf(letter) !== -1
+        (letter) => group[1].includes(letter) && group[2].includes(letter)
       )[0];
     sum += getLetterValue(badge);
   }
