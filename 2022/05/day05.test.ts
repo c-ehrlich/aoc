@@ -1,17 +1,18 @@
 import { assert, describe, it } from "vitest";
-import { solve05a, solve05b } from "./day05";
+import { parseCrateFile, solve05a, solve05b } from "./day05";
 
 describe("day05", () => {
   it("input", () => {
-    const sampleData = [0];
-    assert.deepEqual(sampleData, [0]);
+    const sampleData = parseCrateFile("05/sample.txt");
+    assert.deepEqual(sampleData.crates, [["Z", "N"], ["M", "C", "D"], ["P"]]);
+    assert.deepEqual(sampleData.orders[0], { move: 1, from: 2, to: 1 });
   });
   it("solve05a", () => {
-    const sampleData = [0];
-    assert.equal(solve05a(sampleData), 0);
+    const sampleData = parseCrateFile("05/sample.txt");
+    assert.equal(solve05a(sampleData), "CMZ");
   });
   it("solve05b", () => {
-    const sampleData = [0];
-    assert.equal(solve05b(sampleData), 0);
+    const sampleData = parseCrateFile("05/sample.txt");
+    assert.equal(solve05b(sampleData), "MCD");
   });
 });
