@@ -47,7 +47,6 @@ export function solve05a(input: typeof inputA) {
 
 export function solve05b(input: typeof inputA) {
   const crates = [...input.crates];
-  console.log(crates);
   input.orders.forEach((order) => {
     const [from, to] = [order.from - 1, order.to - 1];
     crates[to] = [...crates[to], ...crates[from].slice(-order.move)];
