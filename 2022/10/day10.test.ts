@@ -1,17 +1,26 @@
 import { assert, describe, it } from "vitest";
-import { solve10a, solve10b } from "./day10";
+import { BabyComputer, solve10a, solve10b } from "./day10";
 
 describe("day10", () => {
   it("input", () => {
-    const sampleData = [0];
-    assert.deepEqual(sampleData, [0]);
+    const babyComputer = new BabyComputer({ file: "10/mini-sample.txt" });
+    assert.deepEqual(babyComputer.getInstructions(), [
+      { type: "noop" },
+      { type: "addx", value: 3 },
+      { type: "addx", value: -5 },
+    ]);
   });
   it("solve10a", () => {
-    const sampleData = [0];
-    assert.equal(solve10a(sampleData), 0);
+    assert.equal(solve10a("10/sample.txt"), 13140);
   });
   it("solve10b", () => {
-    const sampleData = [0];
-    assert.equal(solve10b(sampleData), 0);
+    const expectedOutput = `
+##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....`;
+    assert.equal(solve10b("10/sample.txt"), expectedOutput);
   });
 });
