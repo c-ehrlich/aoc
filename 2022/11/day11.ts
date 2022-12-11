@@ -14,6 +14,12 @@ import fs from "fs";
 // track how many items each monkey inspects
 // return the sum of inspection counts of the top 2 inspectors
 
+// Part 2:
+// don't relax after each item
+// BUT: need to find a way to not have numbers hit Infinity
+// go 10,000 rounds
+// return monkey business again
+
 type Monkey = {
   items: number[];
   operator: "+" | "-" | "*" | "/";
@@ -27,6 +33,7 @@ type Monkey = {
 export class Monkeys {
   monkeys: Monkey[];
   relax: boolean;
+  divisor: number;
   constructor({ file, relax }: { file: string; relax: boolean }) {
     this.relax = relax;
     this.monkeys = fs
@@ -59,6 +66,7 @@ export class Monkeys {
           itemsInspected: 0,
         };
       });
+    this.divisor = this.monkeys.reduce((acc, monkey) => acc * monkey.test, 1);
   }
 
   public printMonkey(index: number) {
@@ -74,23 +82,17 @@ export class Monkeys {
 
   public doRounds(rounds: number) {
     for (let i = 0; i < rounds; i++) {
-      this.round();
-    }
-  }
-
-  private round() {
-    this.monkeys.forEach((monkey) => this.turn(monkey));
-  }
-
-  private turn(monkey: Monkey) {
-    while (monkey.items.length) {
-      monkey.itemsInspected++;
-      const item = monkey.items.shift()!; // bad typescript
-      const newItem = this.inspectItem(monkey, item);
-      const relieved = this.relief(newItem);
-      const test = this.testItem(monkey, relieved);
-      const newMonkey = test ? monkey.ifTrue : monkey.ifFalse;
-      this.monkeys[newMonkey].items.push(relieved);
+      this.monkeys.forEach((monkey) => {
+        while (monkey.items.length) {
+          monkey.itemsInspected++;
+          const item = monkey.items.shift()!; // bad typescript
+          const newItem = this.inspectItem(monkey, item);
+          const relieved = this.relief(newItem);
+          const test = this.testItem(monkey, relieved);
+          const newMonkey = test ? monkey.ifTrue : monkey.ifFalse;
+          this.monkeys[newMonkey].items.push(relieved);
+        }
+      });
     }
   }
 
@@ -112,7 +114,7 @@ export class Monkeys {
     if (this.relax) {
       return Math.floor(item / 3);
     } else {
-      return item;
+      return item % this.divisor;
     }
   }
 
@@ -130,6 +132,11 @@ export class Monkeys {
 }
 
 const monkeys = new Monkeys({ file: "11/input.txt", relax: true });
-monkeys.doRounds(10000);
+monkeys.doRounds(20);
 const monkeyBusiness = monkeys.getMonkeyBusiness();
 console.log(monkeyBusiness);
+
+const monkeys2 = new Monkeys({ file: "11/input.txt", relax: false });
+monkeys2.doRounds(10000);
+const monkeyBusiness2 = monkeys2.getMonkeyBusiness();
+console.log(monkeyBusiness2);

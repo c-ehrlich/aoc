@@ -18,12 +18,12 @@ describe("day11", () => {
     const monkeys = new Monkeys({ file: "11/sample.txt", relax: true });
     monkeys.doRounds(20);
     const monkeyBusiness = monkeys.getMonkeyBusiness();
-    assert.equal(monkeyBusiness, 10605);
+    assert.equal(monkeyBusiness, 10_605);
   });
   it("solve11b", () => {
-    const monkeys = new Monkeys({ file: "11/sample.txt", relax: false });
-    monkeys.doRounds(20);
-    const monkeyBusiness = monkeys.getMonkeyBusiness();
-    assert.equal(monkeyBusiness, 10197);
+    const monkeys2 = new Monkeys({ file: "11/sample.txt", relax: false });
+    monkeys2.doRounds(10_000);
+    const monkeyBusiness2 = monkeys2.getMonkeyBusiness();
+    assert.equal(monkeyBusiness2, 2_713_310_158);
   });
 });
