@@ -1,13 +1,15 @@
 import fs from "fs";
 
-const inputA = [0];
-const inputB = [0];
-
-type CaveItem = "S" | "B" | "#" | ".";
-
-// Cave is a map of y coordinates, which are maps of x coordinates, which are the items in the cave
 type Coord = { x: number; y: number };
 type SensorBeacon = { sensor: Coord; beacon: Coord };
+type RangeInclusive = [number, number];
+
+/**
+ * There is absolutely no reason for this to be a class
+ *
+ * But I made the abstraction before I understood the problem, which
+ * as I understand is the most popular way of writing classes
+ */
 
 class Beacons {
   private sensorsBeacons: SensorBeacon[];
@@ -59,11 +61,68 @@ class Beacons {
   }
 
   public findDistressBeacon() {
-    // 0 <= x <= 4_000_000
-    // 0 <= y <= 4_000_000
-    // find the only possible beacon in this space
-    // tuning frequency = x*4_000_000 + y
-    // There is a better way to do this that doesn't involve rewriting half of the previous function
+    /**
+     * 0 <= x <= 4_000_000
+     * 0 <= y <= 4_000_000
+     * find the only possible beacon in this space
+     * tuning frequency = x*4_000_000 + y
+     *
+     * we need much better performance than before!!
+     */
+
+    for (let y = 0; y <= 4_000_000; y++) {
+      // create a set of ranges that are safe
+      const ranges: RangeInclusive[] = [];
+
+      this.sensorsBeacons.forEach(({ sensor, beacon }) => {
+        // the safe area of each sensor/beacon pair
+        const distance =
+          Math.abs(beacon.y - sensor.y) + Math.abs(beacon.x - sensor.x);
+        const yDistance = Math.abs(y - sensor.y);
+        if (Math.abs(y - sensor.y) < distance) {
+          ranges.push([
+            sensor.x - (distance - yDistance),
+            sensor.x + (distance - yDistance),
+          ]);
+        }
+
+        // the sensor and beacon itself
+        if (sensor.y === y) {
+          ranges.push([sensor.x, sensor.x]);
+        }
+        if (beacon.y === y) {
+          ranges.push([beacon.x, beacon.x]);
+        }
+      });
+
+      /**
+       * check if anything is missing from those ranges
+       * if so, the first missing spot is the beacon
+       *
+       * sort all the ranges by their starting point
+       * x = 0;
+       * shift a range off the front of the array
+       * if range[0] > x, then return [x, y] (and do the multiplication whatever)
+       * if range[1] > x, then set x = range[1] + 1
+       * continue until all ranges are exhausted
+       * x should now be over 4 million
+       * if not, we messed up
+       */
+      const sortedRanges = ranges.sort((a, b) => a[0] - b[0]);
+
+      let x = 0;
+
+      while (sortedRanges.length > 0) {
+        const range = sortedRanges.shift()!;
+        if (range[0] > x) {
+          console.log("found it!", x, y);
+          return x * 4_000_000 + y;
+        }
+        if (range[1] >= x) {
+          x = range[1] + 1;
+        }
+      }
+    }
   }
 }
 
@@ -73,14 +132,17 @@ export function solve15a(file: string, row: number) {
   return safeSpots;
 }
 
-export function solve15b(input: number[]) {
-  return 0;
+export function solve15b(file: string) {
+  const beacons = new Beacons(file);
+  const beacon = beacons.findDistressBeacon();
+  return beacon;
 }
 
 console.time();
 console.log(solve15a("15/input.txt", 2_000_000));
-// console.log(solve15b(inputB));
 console.timeEnd();
-
-// part 1: 1.02s
-// part 2:
+// part 1: 1.02s (would be orders of magnitude less if i ported back the algo from part 2)
+console.time();
+console.log(solve15b("15/input.txt"));
+console.timeEnd();
+// part 2: 1.38s
