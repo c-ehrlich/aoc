@@ -157,5 +157,8 @@ export function solve14b(file: string) {
   return grainsDropped;
 }
 
+// benchmark
+// console.time();
 // console.log(solve14a("14/input.txt"));
 // console.log(solve14b("14/input.txt"));
+// console.timeEnd(); // 42ms for both :)
