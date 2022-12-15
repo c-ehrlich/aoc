@@ -70,7 +70,7 @@ class Beacons {
      * we need much better performance than before!!
      */
 
-    for (let y = 0; y <= 4_000_000; y++) {
+    for (let y = 4_000_000; y >= 0; y--) {
       // create a set of ranges that are safe
       const ranges: RangeInclusive[] = [];
 
@@ -141,8 +141,8 @@ export function solve15b(file: string) {
 console.time();
 console.log(solve15a("15/input.txt", 2_000_000));
 console.timeEnd();
-// part 1: 1.02s (would be orders of magnitude less if i ported back the algo from part 2)
+// part 1: 1.02s (could be way faster if i ported back the algo from part 2)
 console.time();
 console.log(solve15b("15/input.txt"));
 console.timeEnd();
-// part 2: 1.38s
+// part 2: 360ms
