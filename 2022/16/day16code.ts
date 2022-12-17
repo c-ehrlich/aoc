@@ -169,6 +169,8 @@ type PartTwoOutcome = {
   log: string[];
 };
 
+let highscore = 0;
+
 function enterWalkWithElephant({ valves }: { valves: ValvesWithDistances }) {
   const outcomes: PartTwoOutcome[] = [];
   const targetValves = [...valves]
@@ -249,12 +251,17 @@ function walkWithElephant({
   }
 
   if (turns === 0) {
-    outcomes.push({
-      playerPath: playerState.path,
-      elephantPath: elephantState.path,
-      score: newScore,
-      log: [...log, newLog],
-    });
+    // if (newScore > 1724) {
+    if (newScore > highscore) {
+      highscore = newScore;
+      console.log("new highscore", newScore);
+      outcomes.push({
+        playerPath: playerState.path,
+        elephantPath: elephantState.path,
+        score: newScore,
+        log: [...log, newLog],
+      });
+    }
   } else {
     // if both have 1+ turn left, just keep going
     // if there are no more valid paths, also just keep going
@@ -265,8 +272,8 @@ function walkWithElephant({
       newLog += `---keep walking - targetValves: ${targetValves.join(", ")}`;
       walkWithElephant({
         valves,
-        playerState,
-        elephantState,
+        playerState: JSON.parse(JSON.stringify(playerState)),
+        elephantState: JSON.parse(JSON.stringify(elephantState)),
         openValves: [...openValves],
         targetValves,
         turns,
@@ -292,21 +299,26 @@ function walkWithElephant({
         // player gets it
         walkWithElephant({
           valves,
-          playerState: {
-            valve: targetValves[0],
-            path: [...playerState.path, targetValves[0]],
-            queue: [
-              ...new Array(
-                valves.get(playerState.valve)?.distances.get(targetValves[0])! -
-                  1
-              ).fill("wait"),
-              targetValves[0],
-            ],
-          },
-          elephantState: {
-            ...elephantState,
-            queue: ["wait"],
-          },
+          playerState: JSON.parse(
+            JSON.stringify({
+              valve: targetValves[0],
+              path: [...playerState.path, targetValves[0]],
+              queue: [
+                ...new Array(
+                  valves
+                    .get(playerState.valve)
+                    ?.distances.get(targetValves[0])! - 1
+                ).fill("wait"),
+                targetValves[0],
+              ],
+            })
+          ),
+          elephantState: JSON.parse(
+            JSON.stringify({
+              ...elephantState,
+              queue: ["wait"],
+            })
+          ),
           openValves: [...openValves],
           targetValves: [],
           turns,
@@ -317,22 +329,26 @@ function walkWithElephant({
         // elephant gets it
         walkWithElephant({
           valves,
-          playerState: {
-            ...playerState,
-            queue: ["wait"],
-          },
-          elephantState: {
-            valve: targetValves[0],
-            path: [...elephantState.path, targetValves[0]],
-            queue: [
-              ...new Array(
-                valves
-                  .get(elephantState.valve)
-                  ?.distances.get(targetValves[0])! - 1
-              ).fill("wait"),
-              targetValves[0],
-            ],
-          },
+          playerState: JSON.parse(
+            JSON.stringify({
+              ...playerState,
+              queue: ["wait"],
+            })
+          ),
+          elephantState: JSON.parse(
+            JSON.stringify({
+              valve: targetValves[0],
+              path: [...elephantState.path, targetValves[0]],
+              queue: [
+                ...new Array(
+                  valves
+                    .get(elephantState.valve)
+                    ?.distances.get(targetValves[0])! - 1
+                ).fill("wait"),
+                targetValves[0],
+              ],
+            })
+          ),
           openValves: [...openValves],
           targetValves: [],
           turns,
@@ -350,30 +366,34 @@ function walkWithElephant({
             // send player to i, elephant to j
             walkWithElephant({
               valves,
-              playerState: {
-                valve: targetValves[i],
-                path: [...playerState.path, targetValves[i]],
-                queue: [
-                  ...new Array(
-                    valves
-                      .get(playerState.valve)
-                      ?.distances.get(targetValves[i])! - 1
-                  ).fill("wait"),
-                  targetValves[i],
-                ],
-              },
-              elephantState: {
-                valve: targetValves[j],
-                path: [...elephantState.path, targetValves[j]],
-                queue: [
-                  ...new Array(
-                    valves
-                      .get(elephantState.valve)
-                      ?.distances.get(targetValves[j])! - 1
-                  ).fill("wait"),
-                  targetValves[j],
-                ],
-              },
+              playerState: JSON.parse(
+                JSON.stringify({
+                  valve: targetValves[i],
+                  path: [...playerState.path, targetValves[i]],
+                  queue: [
+                    ...new Array(
+                      valves
+                        .get(playerState.valve)
+                        ?.distances.get(targetValves[i])! - 1
+                    ).fill("wait"),
+                    targetValves[i],
+                  ],
+                })
+              ),
+              elephantState: JSON.parse(
+                JSON.stringify({
+                  valve: targetValves[j],
+                  path: [...elephantState.path, targetValves[j]],
+                  queue: [
+                    ...new Array(
+                      valves
+                        .get(elephantState.valve)
+                        ?.distances.get(targetValves[j])! - 1
+                    ).fill("wait"),
+                    targetValves[j],
+                  ],
+                })
+              ),
               openValves: [...openValves],
               targetValves: targetValves.filter(
                 (valve) =>
@@ -476,7 +496,7 @@ export function solve16b(file: string) {
 // console.time();
 // console.log(solve16a("16/input.txt"));
 // console.timeEnd(); // 380ms
-console.log(solve16b("16/sample.txt"));
+console.log(solve16b("16/input.txt"));
 
 // part 2 guesses
 // 1624
