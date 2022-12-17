@@ -493,10 +493,9 @@ export function solve16b(file: string) {
   return bestPath;
 }
 
-// console.time();
-// console.log(solve16a("16/input.txt"));
-// console.timeEnd(); // 380ms
-console.log(solve16b("16/input.txt"));
+console.time();
+console.log(solve16a("16/input.txt"));
+console.timeEnd(); // 380ms
 
-// part 2 guesses
-// 1624
+console.log(solve16b("16/input.txt"));
+// didnt benchmark part 2, but it took about 90 minutes to run lol
