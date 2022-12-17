@@ -153,9 +153,11 @@ function walk({
  * Just do it in separate iterations, and cheat with the numbering
  */
 
+type PlayerMove = ValveName | "wait";
+
 type PlayerState = {
   valve: ValveName;
-  turnsLeft: number;
+  queue: PlayerMove[];
   path: ValveName[];
 };
 
@@ -169,13 +171,18 @@ type PartTwoOutcome = {
 
 function enterWalkWithElephant({ valves }: { valves: ValvesWithDistances }) {
   const outcomes: PartTwoOutcome[] = [];
+  const targetValves = [...valves]
+    .filter((valve) => valve[1].flowRatePerMinute > 0)
+    .map((valve) => valve[0]);
+  console.log("start targetValves:", targetValves);
 
   walkWithElephant({
     valves,
-    playerState: { valve: "AA", turnsLeft: 0, path: ["AA"] },
-    elephantState: { valve: "AA", turnsLeft: 0, path: ["AA"] },
-    flow: 0,
-    turns: 26,
+    playerState: { valve: "AA", path: [], queue: [] },
+    elephantState: { valve: "AA", path: [], queue: [] },
+    openValves: [],
+    targetValves,
+    turns: 27,
     score: 0,
     outcomes,
     log: [],
@@ -183,6 +190,13 @@ function enterWalkWithElephant({ valves }: { valves: ValvesWithDistances }) {
 
   const bestPath = outcomes.sort((a, b) => b.score - a.score)[0];
   console.log("bestPath", bestPath);
+  console.log(outcomes.map((outcome) => outcome.score).sort((a, b) => b - a));
+  const betterPath = outcomes.filter(
+    (outcome) =>
+      JSON.stringify(outcome.playerPath) === `["JJ","BB","CC"]` &&
+      JSON.stringify(outcome.elephantPath) === `["DD","HH","EE"]`
+  );
+  console.log("better path:", betterPath);
   return bestPath.score;
 }
 
@@ -190,7 +204,8 @@ function walkWithElephant({
   valves,
   playerState,
   elephantState,
-  flow,
+  openValves,
+  targetValves,
   turns,
   score,
   outcomes,
@@ -199,189 +214,247 @@ function walkWithElephant({
   valves: ValvesWithDistances;
   playerState: PlayerState;
   elephantState: PlayerState;
-  flow: number;
+  openValves: ValveName[];
+  targetValves: ValveName[];
   turns: number;
   score: number;
   outcomes: PartTwoOutcome[];
   log: string[];
 }): void {
-  const valvesToIgnore = [...playerState.path, ...elephantState.path];
+  turns -= 1;
+  const flow = openValves
+    .map((valve) => (valves.get(valve) as Valve).flowRatePerMinute)
+    .reduce((acc, cur) => acc + cur, 0);
+  const newScore = score + flow;
+  let newLog = `== turn ${26 - turns}, score ${score} => ${newScore}\n`;
+  newLog += `${openValves.join(", ")} are open, releasing ${flow} pressure\n`;
+  newLog += `player queue: ${playerState.queue.join(
+    ", "
+  )}, elephant queue: ${elephantState.queue.join(", ")}\n`;
 
-  // if both are walking
-  if (playerState.turnsLeft > 0 && elephantState.turnsLeft > 0) {
-    const newLog = `${26 - turns} - walking, f:${flow}, s:${score} p:${
-      playerState.turnsLeft
-    }, e:${elephantState.turnsLeft}`;
-    walkWithElephant({
-      valves,
-      playerState: { ...playerState, turnsLeft: playerState.turnsLeft - 1 },
-      elephantState: {
-        ...elephantState,
-        turnsLeft: elephantState.turnsLeft - 1,
-      },
-      flow,
-      turns: turns - 1,
-      score: score + flow,
-      outcomes,
-      log: [...log, newLog],
-    });
+  const playerMove = playerState.queue.shift() || "wait";
+  if (playerMove !== "wait") {
+    openValves.push(playerMove);
+    newLog += `player opens ${playerMove}\n`;
+  } else {
+    newLog += `player is walking somewhere or waiting\n`;
   }
 
-  // player needs a new place to go
-  if (playerState.turnsLeft === 0 && elephantState.turnsLeft > 0) {
-    const newFlow =
-      flow + (valves.get(playerState.valve)?.flowRatePerMinute || 0);
+  const elephantMove = elephantState.queue.shift() || "wait";
+  if (elephantMove !== "wait") {
+    openValves.push(elephantMove);
+    newLog += `elephant opens ${elephantMove}\n`;
+  } else {
+    newLog += `elephant is walking somewhere or waiting\n`;
+  }
 
-    const playerOptions = valves.get(playerState.valve)?.distances || [];
-    playerOptions.forEach((distance, name) => {
-      if (
-        typeof name === "string" &&
-        !valvesToIgnore.includes(name) &&
-        turns >= distance &&
-        valves.get(name)?.flowRatePerMinute
-      ) {
+  if (turns === 0) {
+    outcomes.push({
+      playerPath: playerState.path,
+      elephantPath: elephantState.path,
+      score: newScore,
+      log: [...log, newLog],
+    });
+  } else {
+    // if both have 1+ turn left, just keep going
+    // if there are no more valid paths, also just keep going
+    if (
+      (playerState.queue.length > 0 && elephantState.queue.length > 0) ||
+      targetValves.length === 0
+    ) {
+      newLog += `---keep walking - targetValves: ${targetValves.join(", ")}`;
+      walkWithElephant({
+        valves,
+        playerState,
+        elephantState,
+        openValves: [...openValves],
+        targetValves,
+        turns,
+        score: newScore,
+        outcomes,
+        log: [...log, newLog],
+      });
+    }
+
+    // if both have 0 turns left, try to give both a new path
+    else if (
+      playerState.queue.length === 0 &&
+      elephantState.queue.length === 0
+    ) {
+      newLog += `player queue: ${playerState.queue.join(
+        ", "
+      )}, elephant queue: ${elephantState.queue.join(", ")}`;
+      newLog += `-- both are getting new paths - targetValves: ${targetValves.join(
+        ", "
+      )}`;
+      // if only one valve left, recurse twice - once for each player to open it
+      if (targetValves.length === 1) {
+        // player gets it
         walkWithElephant({
           valves,
           playerState: {
-            valve: name,
-            turnsLeft: distance,
-            path: [...playerState.path, name],
+            valve: targetValves[0],
+            path: [...playerState.path, targetValves[0]],
+            queue: [
+              ...new Array(
+                valves.get(playerState.valve)?.distances.get(targetValves[0])! -
+                  1
+              ).fill("wait"),
+              targetValves[0],
+            ],
           },
           elephantState: {
             ...elephantState,
-            turnsLeft: elephantState.turnsLeft - 1,
+            queue: ["wait"],
           },
-          flow: newFlow,
-          turns: turns - 1,
-          score: score + flow,
+          openValves: [...openValves],
+          targetValves: [],
+          turns,
+          score: newScore,
           outcomes,
-          log: [
-            ...log,
-            `${26 - turns} - player done opening ${
-              playerState.path[playerState.path.length - 1]
-            }, heading to ${name} which is ${distance} turns away`,
-          ],
+          log: [...log, newLog],
         });
-      }
-    });
-    // bonus case: chill (maybe elephant will be faster) - only implement if necessary
-  }
-
-  // elephant needs a new place to go
-  if (playerState.turnsLeft > 0 && elephantState.turnsLeft === 0) {
-    const newFlow =
-      flow + (valves.get(elephantState.valve)?.flowRatePerMinute || 0);
-
-    const elephantOptions = valves.get(elephantState.valve)?.distances || [];
-    elephantOptions.forEach((distance, name) => {
-      if (
-        typeof name === "string" &&
-        !valvesToIgnore.includes(name) &&
-        turns >= distance &&
-        valves.get(name)?.flowRatePerMinute
-      ) {
+        // elephant gets it
         walkWithElephant({
           valves,
           playerState: {
             ...playerState,
-            turnsLeft: playerState.turnsLeft - 1,
+            queue: ["wait"],
           },
           elephantState: {
-            valve: name,
-            turnsLeft: distance,
-            path: [...elephantState.path, name],
+            valve: targetValves[0],
+            path: [...elephantState.path, targetValves[0]],
+            queue: [
+              ...new Array(
+                valves
+                  .get(elephantState.valve)
+                  ?.distances.get(targetValves[0])! - 1
+              ).fill("wait"),
+              targetValves[0],
+            ],
           },
-          flow: newFlow,
-          turns: turns - 1,
-          score: score + flow,
+          openValves: [...openValves],
+          targetValves: [],
+          turns,
+          score: newScore,
           outcomes,
-          log: [
-            ...log,
-            `${26 - turns} - elephant done opening ${
-              elephantState.path[elephantState.path.length - 1]
-            }, heading to ${name} which is ${distance} turns away`,
-          ],
+          log: [...log, newLog],
         });
       }
-    });
-    // bonus case: chill (maybe player will be faster) - only implement if necessary
-  }
-
-  // both need a new place to go
-  if (playerState.turnsLeft === 0 && elephantState.turnsLeft === 0) {
-    const newFlow =
-      flow +
-      (valves.get(playerState.valve)?.flowRatePerMinute || 0) +
-      (valves.get(elephantState.valve)?.flowRatePerMinute || 0);
-
-    const playerOptions =
-      valves.get(playerState.valve)?.distances ||
-      (new Map() as Map<ValveName, number>);
-    const elephantOptions =
-      valves.get(elephantState.valve)?.distances ||
-      (new Map() as Map<ValveName, number>);
-
-    if (playerOptions.size > 0 || elephantOptions.size > 0) {
-      let foundRouteForBoth = false;
-      playerOptions.forEach((distanceP, nameP) => {
-        elephantOptions.forEach((distanceE, nameE) => {
-          if (
-            nameP !== nameE && //
-            typeof nameP === "string" &&
-            typeof nameE === "string" &&
-            !valvesToIgnore.includes(nameP) &&
-            !valvesToIgnore.includes(nameE) &&
-            turns >= distanceP &&
-            turns >= distanceE &&
-            valves.get(nameP)?.flowRatePerMinute &&
-            valves.get(nameE)?.flowRatePerMinute
-          ) {
-            foundRouteForBoth = true;
+      if (targetValves.length > 1) {
+        // iterate over all possible combinations of remaining valves
+        // recurse all of them except sending both players to the same valve
+        for (let i = 0; i < targetValves.length; i++) {
+          for (let j = 0; j < targetValves.length; j++) {
+            if (i === j) continue;
+            // send player to i, elephant to j
             walkWithElephant({
               valves,
               playerState: {
-                valve: nameP,
-                turnsLeft: distanceP,
-                path: [...playerState.path, nameP],
+                valve: targetValves[i],
+                path: [...playerState.path, targetValves[i]],
+                queue: [
+                  ...new Array(
+                    valves
+                      .get(playerState.valve)
+                      ?.distances.get(targetValves[i])! - 1
+                  ).fill("wait"),
+                  targetValves[i],
+                ],
               },
               elephantState: {
-                valve: nameE,
-                turnsLeft: distanceE,
-                path: [...elephantState.path, nameE],
+                valve: targetValves[j],
+                path: [...elephantState.path, targetValves[j]],
+                queue: [
+                  ...new Array(
+                    valves
+                      .get(elephantState.valve)
+                      ?.distances.get(targetValves[j])! - 1
+                  ).fill("wait"),
+                  targetValves[j],
+                ],
               },
-              flow: newFlow,
-              turns: turns - 1,
-              score: score + flow,
+              openValves: [...openValves],
+              targetValves: targetValves.filter(
+                (valve) =>
+                  valve !== targetValves[i] && valve !== targetValves[j]
+              ),
+              turns,
+              score: newScore,
               outcomes,
-              log: [
-                ...log,
-                `${26 - turns} - both done opening ${
-                  playerState.path[playerState.path.length - 1]
-                } and ${
-                  elephantState.path[elephantState.path.length - 1]
-                }, new targets ${nameP} (${distanceP}) and ${nameE} (${distanceE})`,
-              ],
+              log: [...log, newLog],
             });
           }
-        });
-      });
+        }
+      }
     }
 
-    // TODO: maybe need to account for a case where there is only one option left to go to?
-  }
+    // if player has 0 turns left and elephant has 1+ turn left, give player a new path
+    else if (playerState.queue.length === 0 && elephantState.queue.length > 0) {
+      for (let i = 0; i < targetValves.length; i++) {
+        walkWithElephant({
+          valves,
+          playerState: JSON.parse(
+            JSON.stringify({
+              valve: targetValves[i],
+              path: [...playerState.path, targetValves[i]],
+              queue: [
+                ...new Array(
+                  valves
+                    .get(playerState.valve)
+                    ?.distances.get(targetValves[i])! - 1
+                ).fill("wait"),
+                targetValves[i],
+              ],
+            })
+          ),
+          elephantState: JSON.parse(JSON.stringify(elephantState)),
+          openValves: [...openValves],
+          targetValves: targetValves.filter(
+            (valve) => valve !== targetValves[i]
+          ),
+          turns,
+          score: newScore,
+          outcomes,
+          log: [...log, newLog],
+        });
+      }
+    }
 
-  // nobody walking, nowhere left to go
-  outcomes.push({
-    playerPath: [...playerState.path],
-    elephantPath: [...elephantState.path],
-    score: score + flow * turns,
-    log: [
-      ...log,
-      `${26 - turns} - both done, pressure ${flow}, score ${score}, p left ${
-        playerState.turnsLeft
-      }, e left ${elephantState.turnsLeft}}`,
-    ],
-  });
+    // if elephant has 0 turns left and player has 1+ turn left, give elephant a new path
+    else if (elephantState.queue.length === 0 && playerState.queue.length > 0) {
+      newLog += `++++++ IS THIS WHERE WE FUCK UP??? +++++++`;
+      newLog += `${JSON.stringify(playerState)}`;
+      for (let i = 0; i < targetValves.length; i++) {
+        walkWithElephant({
+          valves,
+          playerState: JSON.parse(JSON.stringify(playerState)),
+          elephantState: JSON.parse(
+            JSON.stringify({
+              valve: targetValves[i],
+              path: [...elephantState.path, targetValves[i]],
+              queue: [
+                ...new Array(
+                  valves
+                    .get(elephantState.valve)
+                    ?.distances.get(targetValves[i])! - 1
+                ).fill("wait"),
+                targetValves[i],
+              ],
+            })
+          ),
+          openValves: [...openValves],
+          targetValves: targetValves.filter(
+            (valve) => valve !== targetValves[i]
+          ),
+          turns,
+          score: newScore,
+          outcomes,
+          log: [...log, newLog],
+        });
+      }
+    }
+  }
 }
 
 export function solve16a(file: string) {
@@ -404,3 +477,6 @@ export function solve16b(file: string) {
 // console.log(solve16a("16/input.txt"));
 // console.timeEnd(); // 380ms
 console.log(solve16b("16/sample.txt"));
+
+// part 2 guesses
+// 1624
