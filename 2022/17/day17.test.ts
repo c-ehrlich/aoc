@@ -3,7 +3,7 @@ import { Chamber, Piece, RocksFalling, solve17a, solve17b } from "./day17";
 
 describe("day17", () => {
   it("canGoThere", () => {
-    const chamber = new RocksFalling("17/sample.txt");
+    const chamber = new RocksFalling({ file: "17/sample.txt", pieces: 0 });
     // start
     assert.equal(
       chamber.canGoThere({
@@ -57,6 +57,7 @@ describe("day17", () => {
   //   const sampleData = [0];
   //   assert.equal(solve17b(sampleData), 0);
   // });
+  // did part 2 mostly by hand so no test here
 });
 
 const canGoThereChamberFixture: Chamber = [

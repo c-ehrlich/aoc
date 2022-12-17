@@ -35,17 +35,18 @@ export type Piece = typeof pieceRotation[number];
 export type Offset = [number, number];
 
 export class RocksFalling {
-  PIECES_TO_DROP = 2022;
   wind: Wind[];
   mod: number;
   chamber: Chamber;
+  PIECES_TO_DROP: number;
 
-  constructor(file: string) {
+  constructor({ file, pieces }: { file: string; pieces: number }) {
+    this.PIECES_TO_DROP = pieces;
     this.wind = fs.readFileSync(file, "utf8").split("") as Wind[];
     this.mod = this.wind.length;
     this.chamber = [
       ["#", "#", "#", "#", "#", "#", "#"],
-      ...new Array(4 * this.PIECES_TO_DROP)
+      ...new Array(110)
         .fill(0)
         .map(() => [".", ".", ".", ".", ".", ".", "."] as ChamberRow),
     ];
@@ -62,23 +63,42 @@ export class RocksFalling {
 
   public dropPieces() {
     let move = 0;
+    let amountShifted = 0;
     for (let i = 0; i < this.PIECES_TO_DROP; i++) {
-      if (i < 10) {
-        console.log(
-          this.chamber
-            .slice(0, 20)
-            .reverse()
-            .map((row) => row.join(""))
-        );
-      }
       const piece = pieceRotation[i % 5];
-      const bottomLine = this.findHighestRowWithPiece();
+      let pieceMoves = 0;
+      let bottomLine = this.findHighestRowWithPiece();
+      if (bottomLine >= 100) {
+        this.chamber = [
+          ...this.chamber.slice(50),
+          ...new Array(50)
+            .fill(0)
+            .map(() => [".", ".", ".", ".", ".", ".", "."] as ChamberRow),
+        ];
+        bottomLine -= 50;
+        amountShifted += 50;
+      }
       const offset: Offset = [bottomLine + 4, 2];
       let pieceIsLocked = false;
 
       while (!pieceIsLocked) {
         const windDir = this.wind[move % this.mod];
+        if (move % this.mod === 0 && move < 1000000) {
+          console.log(
+            "piece",
+            i,
+            "height",
+            this.findHighestRowWithPiece() + amountShifted,
+            "windDir",
+            windDir,
+            "pieceMoves",
+            pieceMoves,
+            "piece",
+            piece
+          );
+        }
         move++;
+        pieceMoves++;
 
         // try to move the piece sideways
         if (
@@ -123,7 +143,7 @@ export class RocksFalling {
         }
       }
     }
-    return this.findHighestRowWithPiece();
+    return this.findHighestRowWithPiece() + amountShifted;
   }
 
   public canGoThere({
@@ -153,13 +173,42 @@ export class RocksFalling {
 }
 
 export function solve17a(file: string) {
-  const rf = new RocksFalling(file);
+  const rf = new RocksFalling({ file, pieces: 2022 });
   return rf.dropPieces();
 }
 
 export function solve17b(file: string) {
-  return 0;
+  const rf = new RocksFalling({ file, pieces: 2500 });
+  return rf.dropPieces();
 }
 
 console.log(solve17a("17/input.txt"));
-// console.log(solve17b(inputB));
+console.log(solve17b("17/input.txt"));
+
+/**
+ * there is a cycle!
+ *
+ * piece 1727 height 2690 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ * piece 3422 height 5324 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ * piece 5117 height 7958 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ * piece 6812 height 10592 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ * piece 8507 height 13226 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ * piece 10202 height 15860 windDir > pieceMoves 0 piece [ [ '#', '#', '#' ], [ '.', '.', '#' ], [ '.', '.', '#' ] ]
+ *
+ * starting with piece 1727, there is a cycle every 1695 pieces
+ * each cycle adds 2634 to the height
+ *
+ * so the answer is the sum of:
+ * - height after 1727 pieces
+ * - height of all the cycles added up
+ *   - Floor((1_000_000_000_000 - 1727) / 1695) * 2634 = 1_553_982_297_000
+ *   => piece 2545
+ *   => 3956
+ * - height after adding the remaining rocks at the end of the cycles
+ *   - 773 rocks
+ *
+ * 1717+773 = 2500
+ * => height: 3884
+ *
+ * 1_553_982_297_000 + 3884 = 1553982300884
+ */
