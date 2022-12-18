@@ -1,5 +1,5 @@
 import { assert, describe, it } from "vitest";
-import { solve16a, solve16b } from "./day16code";
+import { solve16a, solve16b } from "./day16";
 
 describe("day16", () => {
   it("solve16a", () => {
