@@ -31,26 +31,27 @@ export function mixOnce(input: IndexedArr, arr: IndexedArr) {
     const idx = arr.findIndex((n) => n.idx === number.idx);
     const num = number.num;
 
-    const cycles =
-      num > 0
-        ? Math.floor((num + idx) / arr.length)
-        : num < 0
-        ? Math.ceil((num - idx) / arr.length)
-        : 0;
+    console.log("---", number.idx, "---");
 
-    // console.log("---", number.idx, "---");
-    // console.log(idx, arr[idx].num, cycles);
-    let newIdx =
-      (idx + arr[idx].num + cycles + Math.abs(cycles) * arr.length) %
-      arr.length;
-    if (newIdx === 0 && num < 0) newIdx = arr.length - 1;
+    let newIdx = shiftCalc(num, idx, arr.length);
 
     // shift the items
-    // console.log("moving ", arr[idx].num, "from", idx, "to", newIdx);
+    console.log("moving ", arr[idx].num, "from", idx, "to", newIdx);
     const shifted = arr.splice(idx, 1);
     arr.splice(newIdx, 0, shifted[0]);
-    // console.log(arr.map((arr) => arr.num));
+    console.log(arr.map((arr) => arr.num));
   });
+}
+
+// TODO: rebuild this function
+export function shiftCalc(num: number, idx: number, arrLength: number) {
+  const cycles = Math.floor((num + idx) / arrLength);
+  let newIdx =
+    (idx + num + cycles + 1_000_000_000_000_000 * arrLength) % arrLength;
+  if (newIdx < 0) newIdx = newIdx * -1;
+  if (newIdx === 0 && num < 0) newIdx = arrLength - 1;
+  console.log(`num: ${num}, idx: ${idx}, cycles: ${cycles}, newIdx ${newIdx}`);
+  return newIdx;
 }
 
 export function findGroveCoordinates(input: number[]) {
@@ -79,10 +80,18 @@ export function solve20a(file: string) {
 export function solve20b(file: string) {
   const arr = parseInput20(file);
   const decrypted = applyDecryptionKey(arr);
-  const shifted = shift(decrypted, 10);
+  const shifted = shift(decrypted, 1);
   const groveCoords = findGroveCoordinates(shifted.map((n) => n.num));
   return groveCoords;
 }
 
-// console.log(solve20a("20/input.txt"));
+// console.log(solve20a("20/sample.txt"));
 console.log(solve20b("20/sample.txt"));
+
+const arr = [
+  { num: 0, idx: 0 },
+  { num: 0, idx: 1 },
+  { num: -14, idx: 2 },
+  { num: 0, idx: 3 },
+];
+const shifted = shift(arr);
