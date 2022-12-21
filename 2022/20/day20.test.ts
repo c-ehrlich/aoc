@@ -27,6 +27,7 @@ describe("day20", () => {
     assert.equal(shiftCalc(-3, 1, 7), 4);
   });
   it("moves a number forward with 3 rotations", () => {
+    // same as: 3, 4, 7 / 9, 4, 7
     assert.equal(shiftCalc(15, 4, 7), 1);
   });
   it("moves a number backward with 3 rotations", () => {

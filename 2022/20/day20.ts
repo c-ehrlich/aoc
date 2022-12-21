@@ -30,11 +30,8 @@ export function mixOnce(input: IndexedArr, arr: IndexedArr) {
   input.forEach((number) => {
     const idx = arr.findIndex((n) => n.idx === number.idx);
     const num = number.num;
-
     // console.log("---", number.idx, "---");
-
     let newIdx = shiftCalc(num, idx, arr.length);
-
     // shift the items
     // console.log("moving ", arr[idx].num, "from", idx, "to", newIdx);
     const shifted = arr.splice(idx, 1);
@@ -44,7 +41,7 @@ export function mixOnce(input: IndexedArr, arr: IndexedArr) {
 }
 
 // TODO: rebuild this function
-export function shiftCalc(num: number, idx: number, arrLength: number) {
+function shiftCalc2(num: number, idx: number, arrLength: number) {
   let cyclesPre = num + idx;
   const cycles = Math.floor(cyclesPre / (arrLength - 1));
   let newIdx =
@@ -58,6 +55,24 @@ export function shiftCalc(num: number, idx: number, arrLength: number) {
   // console.log(`num: ${num}, idx: ${idx}, cycles: ${cycles}, newIdx ${newIdx}`);
   return newIdx;
 }
+
+export function shiftCalc(num: number, idx: number, arrLength: number) {
+  const smallerNum = num % (arrLength - 1);
+  let cycle = 0;
+  if (smallerNum + idx >= arrLength - 1) {
+    cycle = 1;
+  }
+  if (smallerNum + idx < 0) {
+    cycle = -1;
+  }
+  let newIdx =
+    (idx + smallerNum + cycle + 1_000_000_000_000_000 * arrLength) % arrLength;
+
+  return newIdx;
+}
+
+// TODO: try this solution https://github.com/jonathanpaulson/AdventOfCode/blob/master/2022/20.py
+// just get smallerNum, and pop/push
 
 export function findGroveCoordinates(input: number[]) {
   const zeroIndex = input.indexOf(0);
@@ -91,4 +106,4 @@ export function solve20b(file: string) {
 }
 
 console.log(solve20a("20/sample.txt"));
-console.log(solve20b("20/sample.txt"));
+console.log(solve20b("20/input.txt"));
