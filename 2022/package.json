@@ -10,5 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "vitest": "^0.25.3"
+  },
+  "dependencies": {
+    "nerdamer": "^1.1.13"
   }
 }
