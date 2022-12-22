@@ -4,7 +4,6 @@ import {
   findGroveCoordinates,
   parseInput20,
   shift,
-  shiftCalc,
   solve20a,
   solve20b,
 } from "./day20";
@@ -13,39 +12,6 @@ describe("day20", () => {
   it("input", () => {
     const sampleData = parseInput20("20/sample.txt");
     assert.deepEqual(sampleData, inputFixture);
-  });
-  it("moves a number forward without a cycle", () => {
-    assert.equal(shiftCalc(1, 0, 7), 1);
-  });
-  it("moves a number backward without a cycle", () => {
-    assert.equal(shiftCalc(-2, 5, 7), 3);
-  });
-  it("moves a number forward with 1 rotation", () => {
-    assert.equal(shiftCalc(5, 5, 7), 4);
-  });
-  it("moves a number backwards with 1 rotation", () => {
-    assert.equal(shiftCalc(-3, 1, 7), 4);
-  });
-  it("moves a number forward with 3 rotations", () => {
-    // same as: 3, 4, 7 / 9, 4, 7
-    assert.equal(shiftCalc(15, 4, 7), 1);
-  });
-  it("moves a number backward with 3 rotations", () => {
-    assert.equal(shiftCalc(-15, 1, 7), 4);
-  });
-  it("shifts around a number that lands at 0", () => {
-    assert.equal(shiftCalc(-2, 2, 7), 6);
-  });
-  it("doesn't move a 0", () => {
-    assert.equal(shiftCalc(0, 4, 7), 4);
-  });
-  it("shift", () => {
-    const sampleData = parseInput20("20/sample.txt");
-    const shifted = shift(sampleData);
-    assert.deepEqual(
-      shifted.map((num) => num.num),
-      [1, 2, -3, 4, 0, 3, -2]
-    );
   });
   it("findGroveCoordinates", () => {
     assert.equal(findGroveCoordinates([1, 2, -3, 4, 0, 3, -2]), 3);
