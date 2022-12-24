@@ -28,25 +28,13 @@ export class BlizzardRunner {
     const cycleX = turn % lengthX; // 0 and l-1 are walls
     const lengthY = this.map.length - 2;
     const cycleY = turn % lengthY; // 0 and l-1 are walls
-    // ^
-    if (this.map[((coord[0] + cycleY - 1) % lengthY) + 1][coord[1]] === "^") {
-      return true;
-    }
-    // <
-    if (this.map[coord[0]][((coord[1] + cycleX - 1) % lengthX) + 1] === "<") {
-      return true;
-    }
-    // v
     if (
+      this.map[((coord[0] + cycleY - 1) % lengthY) + 1][coord[1]] === "^" ||
+      this.map[coord[0]][((coord[1] + cycleX - 1) % lengthX) + 1] === "<" ||
       this.map[((coord[0] - cycleY + lengthY - 1) % lengthY) + 1][coord[1]] ===
-      "v"
-    ) {
-      return true;
-    }
-    // >
-    if (
+        "v" ||
       this.map[coord[0]][((coord[1] - cycleX + lengthX - 1) % lengthX) + 1] ===
-      ">"
+        ">"
     ) {
       return true;
     }
@@ -54,21 +42,20 @@ export class BlizzardRunner {
   }
 
   public walk({ start, goals }: { start: Coordinate; goals: Coordinate[] }) {
-    // queue of [coord, turn]
     let turnGlobal = 0;
     let pos = start;
+
     while (goals.length) {
       const currentGoal = goals.shift() as Coordinate;
-      let queue: [Coordinate, number][] = [[pos, turnGlobal]]; // TODO: how to get turn for goals 2, 3, etc?
+      let queue: [Coordinate, number][] = [[pos, turnGlobal]];
       const haveBeenTo: Array<Set<string>> = [new Set()]; // index is turn
-
-      console.log("turn", turnGlobal, "goal", currentGoal);
 
       while (queue.length > 0) {
         const [coord, turn] = queue.shift()!;
         if (!haveBeenTo[turn]) {
           haveBeenTo[turn] = new Set();
         }
+        // have been here
         if (haveBeenTo[turn].has(coord.toString())) {
           continue;
         }
@@ -80,13 +67,10 @@ export class BlizzardRunner {
           coord[1] < 0 ||
           coord[1] >= this.map[0].length
         ) {
-          // console.log(`oob at ${coord} on turn ${turn}`);
           continue;
         }
-        // don't linger around at the star
         // is wall
         if (this.map[coord[0]][coord[1]] === "#") {
-          // console.log(`wall at ${coord} on turn ${turn}`);
           continue;
         }
         // is goal
