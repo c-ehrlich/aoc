@@ -13,18 +13,10 @@ export class BlizzardRunner {
       .map((line) => line.split("")) as WindMap;
   }
 
-  protected isStart(coord: Coordinate) {
-    return coord[0] === 0 && coord[1] === 1;
+  public getMapSize() {
+    return [this.map.length, this.map[0].length];
   }
-  protected isEnd(coord: Coordinate) {
-    console.log(this.map.length, this.map[0].length);
-    return (
-      coord[0] === this.map.length - 1 && coord[1] === this.map[0].length - 2
-    );
-  }
-  /**
-   * We start on turn 1!
-   */
+
   protected isBlizzardOnTurn({
     coord,
     turn,
@@ -61,83 +53,90 @@ export class BlizzardRunner {
     return false;
   }
 
-  public walk() {
+  public walk({ start, goals }: { start: Coordinate; goals: Coordinate[] }) {
     // queue of [coord, turn]
-    const queue: [Coordinate, number, string][] = [[[0, 1], 0, ""]];
-    const haveBeenTo: Array<Set<string>> = [new Set()]; // index is turn
-    while (queue.length > 0) {
-      console.log(queue.length);
-      const [coord, turn, log] = queue.shift()!;
-      if (!haveBeenTo[turn]) {
-        haveBeenTo[turn] = new Set();
+    let turnGlobal = 0;
+    let pos = start;
+    while (goals.length) {
+      const currentGoal = goals.shift() as Coordinate;
+      let queue: [Coordinate, number][] = [[pos, turnGlobal]]; // TODO: how to get turn for goals 2, 3, etc?
+      const haveBeenTo: Array<Set<string>> = [new Set()]; // index is turn
+
+      console.log("turn", turnGlobal, "goal", currentGoal);
+
+      while (queue.length > 0) {
+        const [coord, turn] = queue.shift()!;
+        if (!haveBeenTo[turn]) {
+          haveBeenTo[turn] = new Set();
+        }
+        if (haveBeenTo[turn].has(coord.toString())) {
+          continue;
+        }
+        haveBeenTo[turn].add(coord.toString());
+        // is oob, shouldn't be able to get here except walking up from start or down from end but lets be safe
+        if (
+          coord[0] < 0 ||
+          coord[0] >= this.map.length ||
+          coord[1] < 0 ||
+          coord[1] >= this.map[0].length
+        ) {
+          // console.log(`oob at ${coord} on turn ${turn}`);
+          continue;
+        }
+        // don't linger around at the star
+        // is wall
+        if (this.map[coord[0]][coord[1]] === "#") {
+          // console.log(`wall at ${coord} on turn ${turn}`);
+          continue;
+        }
+        // is goal
+        if (currentGoal[0] === coord[0] && currentGoal[1] === coord[1]) {
+          queue = [];
+          turnGlobal = turn;
+          pos = coord;
+          continue;
+        }
+        // is blizzard
+        if (this.isBlizzardOnTurn({ coord, turn })) {
+          continue;
+        }
+        // check other directions
+        queue.push([[coord[0] + 1, coord[1]], turn + 1]);
+        queue.push([[coord[0] - 1, coord[1]], turn + 1]);
+        queue.push([[coord[0], coord[1] + 1], turn + 1]);
+        queue.push([[coord[0], coord[1] - 1], turn + 1]);
+        queue.push([[coord[0], coord[1]], turn + 1]); // wait
       }
-      if (haveBeenTo[turn].has(coord.toString())) {
-        continue;
-      }
-      haveBeenTo[turn].add(coord.toString());
-      // is oob, shouldn't be able to get here except walking up from start but lets be safe
-      if (
-        coord[0] < 0 ||
-        coord[0] >= this.map.length ||
-        coord[1] < 0 ||
-        coord[1] >= this.map[0].length
-      ) {
-        console.log(`oob at ${coord} on turn ${turn}`);
-        continue;
-      }
-      // don't linger around at the star
-      // is wall
-      if (this.map[coord[0]][coord[1]] === "#") {
-        console.log(`wall at ${coord} on turn ${turn}`);
-        continue;
-      }
-      // is goal
-      if (this.isEnd(coord)) {
-        return turn;
-      }
-      // is blizzard
-      if (this.isBlizzardOnTurn({ coord, turn })) {
-        console.log(`blizzard on turn ${turn} at ${coord}`);
-        continue;
-      }
-      // check other directions
-      queue.push([
-        [coord[0] + 1, coord[1]],
-        turn + 1,
-        log + `${turn}: ${coord} -> ${[coord[0] + 1, coord[1]]}\n`,
-      ]);
-      queue.push([
-        [coord[0] - 1, coord[1]],
-        turn + 1,
-        log + `${turn}: ${coord} -> ${[coord[0] - 1, coord[1]]}\n`,
-      ]);
-      queue.push([
-        [coord[0], coord[1] + 1],
-        turn + 1,
-        log + `${turn}: ${coord} -> ${[coord[0], coord[1] + 1]}\n`,
-      ]);
-      queue.push([
-        [coord[0], coord[1] - 1],
-        turn + 1,
-        log + `${turn}: ${coord} -> ${[coord[0], coord[1] - 1]}\n`,
-      ]);
-      queue.push([
-        [coord[0], coord[1]],
-        turn + 1,
-        log + `${turn}: wait at ${coord}\n`,
-      ]); // wait
     }
+    return turnGlobal;
   }
 }
 
 export function solve24a(file: string) {
   const blizz = new BlizzardRunner(file);
-  return blizz.walk();
+  const mapSize = blizz.getMapSize();
+  return blizz.walk({
+    start: [0, 1],
+    goals: [[mapSize[0] - 1, mapSize[1] - 2]],
+  });
 }
 
 export function solve24b(file: string) {
-  return 0;
+  const blizz = new BlizzardRunner(file);
+  const mapSize = blizz.getMapSize();
+  return blizz.walk({
+    start: [0, 1],
+    goals: [
+      [mapSize[0] - 1, mapSize[1] - 2],
+      [0, 1],
+      [mapSize[0] - 1, mapSize[1] - 2],
+    ],
+  });
 }
 
+console.time("solve24a");
 console.log(solve24a("24/input.txt"));
-// console.log(solve24b("24/sample.txt"));
+console.timeEnd("solve24a"); // 420ms
+console.time("solve24b");
+console.log(solve24b("24/input.txt"));
+console.timeEnd("solve24b"); // 1.3s

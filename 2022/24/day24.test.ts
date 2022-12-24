@@ -2,12 +2,6 @@ import { assert, describe, it } from "vitest";
 import { BlizzardRunner, solve24a, solve24b } from "./day24";
 
 class BlizzardRunnerTest extends BlizzardRunner {
-  public testIsStart(coord: [number, number]) {
-    return this.isStart(coord);
-  }
-  public testIsEnd(coord: [number, number]) {
-    return this.isEnd(coord);
-  }
   public testIsBlizzardOnTurn({
     coord,
     turn,
@@ -20,14 +14,6 @@ class BlizzardRunnerTest extends BlizzardRunner {
 }
 
 describe("day24", () => {
-  it("isStart", () => {
-    const blizz = new BlizzardRunnerTest("24/sample.txt");
-    assert.equal(blizz.testIsStart([0, 1]), true);
-  });
-  it("isEnd", () => {
-    const blizz = new BlizzardRunnerTest("24/sample.txt");
-    assert.equal(blizz.testIsEnd([5, 6]), true);
-  });
   it("isBlizzardOnTurn ^", () => {
     const blizz = new BlizzardRunnerTest("24/sample-up.txt");
     assert.equal(blizz.testIsBlizzardOnTurn({ coord: [2, 4], turn: 0 }), true);
@@ -75,11 +61,9 @@ describe("day24", () => {
     assert.equal(blizz.testIsBlizzardOnTurn({ coord: [1, 1], turn: 0 }), false);
   });
   it("solve24a", () => {
-    const sampleData = [0];
     assert.equal(solve24a("24/sample.txt"), 18);
   });
-  // it("solve24b", () => {
-  //   const sampleData = [0];
-  //   assert.equal(solve24b("24/sample.txt"), 0);
-  // });
+  it("solve24b", () => {
+    assert.equal(solve24b("24/sample.txt"), 54);
+  });
 });
