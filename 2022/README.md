@@ -8,4 +8,4 @@ This year I'm doing it in TypeScript, and trying to stick to just types, arrays/
 
 - install dependencies: `pnpm i`
 - run a solution: `pnpm i -g tsx`, `tsx 01/day01.ts` (etc for other days)
-- run tests in watch mode: `pnpm test`
+- run one day's tests in watch mode: `pnpm test day01` (etc for other days)
