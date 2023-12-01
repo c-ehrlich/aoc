@@ -3,7 +3,7 @@ export function parse(input: string) {
 }
 
 export function partOne(input: ReturnType<typeof parse>) {
-  const out = input.reduce((acc, curr) => {
+  return input.reduce((acc, curr) => {
     let firstNum = 0
     let lastNum = 0
     for (let i = 0; i < curr.length; i++) {
@@ -22,7 +22,6 @@ export function partOne(input: ReturnType<typeof parse>) {
     }
     return acc + firstNum * 10 + lastNum
   }, 0)
-  return out
 }
 
 const NUMBER_STRINGS = [
@@ -68,11 +67,10 @@ function p2GetLastDigit(str: string) {
 }
 
 export function partTwo(input: ReturnType<typeof parse>) {
-  const out = input.reduce((acc, curr, idx) => {
+  return input.reduce((acc, curr, idx) => {
     const firstNum = p2GetFirstDigit(curr)
     const lastNum = p2GetLastDigit(curr)
 
     return acc + firstNum * 10 + lastNum
   }, 0)
-  return out
 }
