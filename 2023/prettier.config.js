@@ -1,9 +1,9 @@
 /** @type {import("prettier").Config} */
 const config = {
-  semi: false,
+  semi: true,
   arrowParens: 'avoid',
   trailingComma: 'none',
-  singleQuote: true,
+  singleQuote: false,
   endOfLine: 'lf',
   bracketSpacing: true,
   printWidth: 80,
