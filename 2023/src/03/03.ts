@@ -1,3 +1,5 @@
+import "../utils.ts";
+
 export function parse(input: string) {
   return input.split("\n").map(row => row.split(""));
 }
@@ -56,7 +58,7 @@ export function partOne(input: ReturnType<typeof parse>) {
     if (curNumIsPartNumber) numbers.push(parseInt(curNum));
   }
 
-  return numbers.reduce((acc, cur) => acc + cur, 0);
+  return numbers.sum();
 }
 
 function getWholeNumberAt(map: string[][], row: number, col: number): number {
