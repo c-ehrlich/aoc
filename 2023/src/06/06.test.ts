@@ -5,7 +5,8 @@ import {
   parseB,
   parseA,
   fastPartTwo,
-  veryFastPartTwo
+  veryFastPartTwo,
+  constantTimePartTwo
 } from "./06";
 
 const { default: example } = await import(`./example.txt`);
@@ -26,6 +27,10 @@ describe("Day 6", () => {
   });
   it("Part Two Very Fast", () => {
     const res = veryFastPartTwo(parseB(example));
+    expect(res).toEqual(71503);
+  });
+  it("Part Two Constant Time", () => {
+    const res = constantTimePartTwo(parseB(example));
     expect(res).toEqual(71503);
   });
 });

@@ -40,8 +40,6 @@ export function parseB(input: string) {
     .map(row => row.replace(/\s+/g, ""))
     .map(Number);
 
-  console.log(rows);
-
   return {
     time: rows[0],
     distance: rows[1]
@@ -114,6 +112,22 @@ export function veryFastPartTwo(input: ReturnType<typeof parseB>) {
   return lastWin - firstWin + 1;
 }
 
+// 0.05ms
+// didnt come up with this myself, but its painfully obvious in hindsight
+export function constantTimePartTwo(input: ReturnType<typeof parseB>) {
+  // quadratic equation
+  const a = -1;
+  const b = input.time;
+  const c = -input.distance + 1;
+  const sqrt = Math.sqrt(b * b - 4 * a * c);
+  const x1 = (-b + sqrt) / (2 * a);
+  const x2 = (-b - sqrt) / (2 * a);
+
+  const res = Math.floor(x2) - Math.ceil(x1) + 1;
+
+  return res;
+}
+
 console.time("a");
 console.log(partOne(parseA(input)));
 console.timeEnd("a");
@@ -129,3 +143,7 @@ console.timeEnd("fastB");
 console.time("veryFastB");
 console.log(veryFastPartTwo(parseB(input)));
 console.timeEnd("veryFastB");
+
+console.time("constantTimeB");
+console.log(constantTimePartTwo(parseB(input)));
+console.timeEnd("constantTimeB");
