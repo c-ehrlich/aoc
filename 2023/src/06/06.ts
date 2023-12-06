@@ -48,6 +48,7 @@ export function parseB(input: string) {
   } as Race;
 }
 
+// 54ms
 export function partTwo(input: ReturnType<typeof parseB>) {
   let waysToBeat = 0;
   for (let i = 0; i < input.time; i++) {
@@ -56,5 +57,75 @@ export function partTwo(input: ReturnType<typeof parseB>) {
   return waysToBeat;
 }
 
+// 12ms
+// could improve by doing two crystal balls to find first and last win
+export function fastPartTwo(input: ReturnType<typeof parseB>) {
+  let firstWin = -1;
+  let lastWin = -1;
+  for (let i = 0; i < input.time; i++) {
+    if (i * (input.time - i) > input.distance) {
+      firstWin = i;
+      break;
+    }
+  }
+  for (let i = input.time; i > 0; i--) {
+    if (i * (input.time - i) > input.distance) {
+      lastWin = i;
+      break;
+    }
+  }
+  return lastWin - firstWin + 1;
+}
+
+// 0.5ms
+export function veryFastPartTwo(input: ReturnType<typeof parseB>) {
+  let firstWin = -1;
+  let lastWin = -1;
+
+  const increment = Math.floor(Math.sqrt(input.time));
+
+  let start = -1;
+  for (let i = 0; i < input.time; i += increment) {
+    if (i * (input.time - i) > input.distance) {
+      start = i - increment;
+      break;
+    }
+  }
+  for (let i = start; i < input.time; i++) {
+    if (i * (input.time - i) > input.distance) {
+      firstWin = i;
+      break;
+    }
+  }
+
+  let startBack = -1;
+  for (let i = input.time; i > 0; i -= increment) {
+    if (i * (input.time - i) > input.distance) {
+      startBack = i + increment;
+      break;
+    }
+  }
+  for (let i = startBack; i > 0; i--) {
+    if (i * (input.time - i) > input.distance) {
+      lastWin = i;
+      break;
+    }
+  }
+  return lastWin - firstWin + 1;
+}
+
+console.time("a");
 console.log(partOne(parseA(input)));
+console.timeEnd("a");
+
+console.time("b");
 console.log(partTwo(parseB(input)));
+console.timeEnd("b");
+
+console.time("fastB");
+console.log(fastPartTwo(parseB(input)));
+console.timeEnd("fastB");
+
+console.time("veryFastB");
+console.log(veryFastPartTwo(parseB(input)));
+console.timeEnd("veryFastB");
