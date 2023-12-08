@@ -31,20 +31,42 @@ export function partOne(input: ReturnType<typeof parse>) {
 function hasFoundEnd(nodes: string[]) {
   return nodes.every(n => n[2] === "Z");
 }
+
+function lowestCommonMultiple(nums: number[]) {
+  for (let multiple = 1; ; ++multiple) {
+    const toTest = nums[0]! * multiple;
+    console.log(toTest);
+    if (nums.every(n => toTest % n === 0)) return toTest;
+  }
+}
+
 export function partTwo(input: ReturnType<typeof parse>) {
   const { instructions, nodes } = input;
   let positions = Array.from(nodes.keys()).filter(n => n[2] == "A");
   let steps = 0;
 
-  while (true) {
-    console.log("positions", positions);
-    for (const instruction of instructions) {
-      ++steps;
-      positions = positions.map(p => nodes.get(p)![instruction]);
-      if (hasFoundEnd(positions)) return steps;
+  const cycles = positions.map(p => {
+    let loops = 0;
+    while (true) {
+      ++loops;
+      for (const instruction of instructions) {
+        p = nodes.get(p)![instruction];
+      }
+      if (p[2] === "Z") {
+        return loops;
+      }
     }
-  }
+  });
+
+  const hcm = cycles.reduce((a, b) => a * b, 1);
+  const totalSteps = hcm * instructions.length;
+  return totalSteps;
 }
 
+console.time("partOne");
 console.log(partOne(parse(input)));
+console.timeEnd("partOne");
+
+console.time("partTwo");
 console.log(partTwo(parse(input)));
+console.timeEnd("partTwo");
