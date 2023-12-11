@@ -14,6 +14,8 @@ const CONNECTS_DOWN: MazePoint[] = ["|", "F", "7", "S"];
 const CONNECTS_LEFT: MazePoint[] = ["-", "J", "7", "S"];
 const CONNECTS_RIGHT: MazePoint[] = ["-", "F", "L", "S"];
 
+const VERTICAL_PIPES = ["|", "J", "L"];
+
 function canGoLeft(maze: Maze, pos: Pos, visited: Visited) {
   if (pos.x - 1 < 0) return false;
   if (!CONNECTS_LEFT.includes(maze[pos.y]![pos.x]!)) return false;
@@ -157,38 +159,17 @@ export function partTwo(input: ReturnType<typeof parse>) {
   console.time("inside");
   let inside = 0;
   for (let y = 0; y < input.length; y++) {
-    let isInside = false;
-    let lastCorner = null;
+    let verticalPipesSeen = 0;
     for (let x = 0; x < input[0]!.length; x++) {
       if (!mainLoop[y]![x]!) {
-        if (isInside) {
+        if (verticalPipesSeen % 2 === 1) {
           ++inside;
         }
 
         continue;
       }
 
-      const tile = input[y]![x]!;
-
-      switch (tile) {
-        case "-":
-          break;
-        case "|":
-          isInside = !isInside;
-          break;
-        case "L":
-          lastCorner = "L";
-          break;
-        case "F":
-          lastCorner = "F";
-          break;
-        case "J":
-          if (lastCorner === "F") isInside = !isInside;
-          break;
-        case "7":
-          if (lastCorner === "L") isInside = !isInside;
-          break;
-      }
+      if (VERTICAL_PIPES.includes(input[y]![x]!)) verticalPipesSeen++;
     }
   }
   console.timeEnd("inside");
