@@ -1,5 +1,4 @@
 const { default: input } = await import("./input.txt");
-import R from "remeda";
 
 export function parse(input: string) {
   return input.split("\n\n").map(pattern => pattern.split("\n"));
@@ -72,7 +71,6 @@ export function findVerticalMirroringWithBug(pattern: string[]) {
   ];
 
   for (const offset of offsets) {
-    console.log("offset", offset);
     for (let i = 0; i < pattern.length - offset; i++) {
       let differences = 0;
       for (let j = 0; j < pattern.length; j++) {
@@ -83,10 +81,7 @@ export function findVerticalMirroringWithBug(pattern: string[]) {
         );
         if (differences > 1) break;
       }
-      console.log("diffs", differences);
       if (differences === 1) {
-        console.log(pattern.join("\n"));
-        console.log(i + 1);
         return i + 1;
       }
     }
@@ -96,7 +91,6 @@ export function findVerticalMirroringWithBug(pattern: string[]) {
 }
 
 export function findHorizontalMirroringWithBug(pattern: string[]) {
-  console.log("horizontal");
   const rotated = rotateClockwise(pattern);
   return findVerticalMirroringWithBug(rotated);
 }
