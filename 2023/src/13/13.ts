@@ -5,26 +5,21 @@ export function parse(input: string) {
 }
 
 export function findVerticalMirroring(pattern: string[]) {
-  const offsets = [
-    1, // even (mirror between rows)
-    2 // odd (middor on row)
-  ];
+  const offset = 1;
 
-  for (const offset of offsets) {
-    for (let i = 0; i < pattern.length - offset; i++) {
-      let success = false;
-      for (let j = 0; j < pattern.length; j++) {
-        if (i - j < 0 || i + j + offset >= pattern.length) {
-          success = true;
-          break;
-        }
-        if (pattern[i - j] !== pattern[i + j + offset]) {
-          break;
-        }
+  for (let i = 0; i < pattern.length - offset; i++) {
+    let success = false;
+    for (let j = 0; j < pattern.length; j++) {
+      if (i - j < 0 || i + j + offset >= pattern.length) {
+        success = true;
+        break;
       }
-      if (success === true) {
-        return i + 1;
+      if (pattern[i - j] !== pattern[i + j + offset]) {
+        break;
       }
+    }
+    if (success === true) {
+      return i + 1;
     }
   }
 
@@ -115,15 +110,15 @@ export function partTwo(input: ReturnType<typeof parse>) {
   let sum = 0;
 
   for (let i = 0; i < input.length; i++) {
-    const vertical = findVerticalMirroringWithBug(input[i]!);
-    if (vertical !== -1) {
-      sum += 100 * vertical;
-      continue;
-    }
-
     const horizontal = findHorizontalMirroringWithBug(input[i]!);
     if (horizontal !== -1) {
       sum += horizontal;
+      continue;
+    }
+
+    const vertical = findVerticalMirroringWithBug(input[i]!);
+    if (vertical !== -1) {
+      sum += 100 * vertical;
       continue;
     }
   }
@@ -131,5 +126,9 @@ export function partTwo(input: ReturnType<typeof parse>) {
   return sum;
 }
 
+console.time("partOne");
 console.log(partOne(parse(input)));
+console.timeEnd("partOne");
+console.time("partTwo");
 console.log(partTwo(parse(input)));
+console.timeEnd("partTwo");
