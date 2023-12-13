@@ -140,6 +140,19 @@ describe("Day 13", () => {
         .map(line => line.trim());
       expect(findVerticalMirroringWithBug(pattern)).toBe(-1);
     });
+
+    it("the weird one", () => {
+      const pattern = `.....########..
+      ####...####...#
+      ####...####...#
+      .#...########..
+      #.##..##..##..#
+      ##.....####....
+      ...###..##..###`
+        .split("\n")
+        .map(line => line.trim());
+      expect(findVerticalMirroringWithBug(pattern)).toBe(2);
+    });
   });
 
   describe("findHorizontalMirroringWithBug", () => {
@@ -153,6 +166,19 @@ describe("Day 13", () => {
         .split("\n")
         .map(line => line.trim());
       expect(findHorizontalMirroringWithBug(pattern)).toBe(6);
+    });
+
+    it("the weird one", () => {
+      const pattern = `.....########..
+      ####...####...#
+      ####...####...#
+      .#...########..
+      #.##..##..##..#
+      ##.....####....
+      ...###..##..###`
+        .split("\n")
+        .map(line => line.trim());
+      expect(findHorizontalMirroringWithBug(pattern)).toBe(-1);
     });
   });
 
