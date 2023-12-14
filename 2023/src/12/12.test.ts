@@ -1,32 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import {
-  countWays,
-  isLegalPosition,
-  isValidPlacement,
-  parse,
-  partOne,
-  partTwo
-} from "./12";
+import { countWays, isValidPlacement, parse, partOne, partTwo } from "./12";
 
 const { default: example } = await import("./example.txt");
 
 describe("Day 12", () => {
-  describe("isLegalPosition", () => {
-    it("Valid", () => {
-      expect(isLegalPosition("???.###", [1, 1, 3], [0, 2, 4])).toBe(true);
-    });
-
-    it("On a .", () => {
-      expect(isLegalPosition("???.###", [3], [3])).toBe(false);
-    });
-
-    it("Missing a #", () => {
-      expect(isLegalPosition("???.###", [1, 1, 1, 1], [0, 2, 4, 6])).toBe(
-        false
-      );
-    });
-  });
-
   describe("isValidPlacement", () => {
     it("1", () => {
       expect(isValidPlacement(0, 1, "???.###")).toBe(true);
@@ -56,6 +33,11 @@ describe("Day 12", () => {
       expect(isValidPlacement(1, 1, ".#")).toBe(true);
       expect(isValidPlacement(0, 1, "#.")).toBe(true);
       expect(isValidPlacement(1, 1, "#.")).toBe(false);
+    });
+
+    it("not last #", () => {
+      expect(isValidPlacement(0, 1, "#.#")).toBe(true);
+      expect(isValidPlacement(0, 1, "#.#", true)).toBe(false);
     });
   });
 
@@ -131,6 +113,10 @@ describe("Day 12", () => {
           [3, 2, 1, 3, 2, 1, 3, 2, 1, 3, 2, 1, 3, 2, 1]
         )
       ).toBe(506250);
+    });
+
+    it("one that breaks", () => {
+      expect(countWays("???#??.?#??.?", [2, 2])).toBe(4);
     });
   });
 
