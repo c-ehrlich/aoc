@@ -82,12 +82,60 @@ export function partOne(input: ReturnType<typeof parse>) {
   let result = 0;
 
   for (const row of input) {
-    const possiblePlacements = findOrderedPlacements(row.springs, row.groups);
+    const possiblePlacements = countWays(row.springs, row.groups);
     result += possiblePlacements;
   }
 
   return result;
 }
+
+export function isValidPlacement(
+  start: number,
+  itemLength: number,
+  board: string
+): boolean {
+  if (start + itemLength > board.length) return false;
+  if (board[start - 1] === "#") return false;
+  if (board[start + itemLength] === "#") return false;
+  for (let i = start; i < start + itemLength; i++) {
+    if (board[i] === ".") return false;
+  }
+  return true;
+}
+
+export function countWays(board: string, items: number[]): number {
+  const n = board.length;
+  const cache: Map<string, number> = new Map();
+
+  function dp(pos: number, itemIndex: number): number {
+    if (itemIndex === items.length) return 1;
+    if (pos >= n) return 0;
+
+    const key = `${pos}-${itemIndex}`;
+    // if (cache.has(key)) return cache.get(key)!;
+
+    let ways = 0;
+    const length = items[itemIndex]!;
+
+    for (let i = pos; i < n; i++) {
+      if (isValidPlacement(i, length, board)) {
+        // Skip an extra space after placing the item
+        ways += dp(i + length + 1, itemIndex + 1);
+      }
+    }
+
+    console.log(key, ways);
+    cache.set(key, ways);
+    return ways;
+  }
+
+  return dp(0, 0);
+}
+
+// Example usage
+// const board = ".??..??...?##.";
+// const items = [1, 1, 3];
+// console.log(countWays(board, items)); // Output: 4
 
 export function partTwo(input: ReturnType<typeof parse>) {
   const newInput = input.map(i => ({
@@ -99,6 +147,4 @@ export function partTwo(input: ReturnType<typeof parse>) {
 }
 
 // console.log(partOne(parse(input)));
-console.log(partTwo(parse(input)));
-
-// MEMOIZE EVERYTHING, USE MAPS
+// console.log(partTwo(parse(input)));
