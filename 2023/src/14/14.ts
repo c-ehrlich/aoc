@@ -9,10 +9,14 @@ function moveAllTheWayNorth(input: ReturnType<typeof parse>) {
   for (let y = 0; y < input.length; y++) {
     for (let x = 0; x < input[y]!.length; x++) {
       if (input[y]![x] !== "O") continue;
-      for (let mv = y; mv >= 1; mv--) {
-        if (input[mv - 1]![x] !== ".") break;
-        input[mv - 1]![x] = "O";
-        input[mv]![x] = ".";
+      let mv = y;
+      while (true) {
+        mv -= 1;
+        if (mv < 0 || input[mv]![x] !== ".") break;
+      }
+      if (y !== mv + 1) {
+        input[mv + 1]![x] = "O";
+        input[y]![x] = ".";
       }
     }
   }
@@ -22,10 +26,14 @@ function moveAllTheWayEast(input: ReturnType<typeof parse>) {
   for (let x = input[0]!.length - 1; x >= 0; x--) {
     for (let y = 0; y < input.length; y++) {
       if (input[y]![x] !== "O") continue;
-      for (let mv = x; mv < input[y]!.length - 1; mv++) {
-        if (input[y]![mv + 1] !== ".") break;
-        input[y]![mv + 1] = "O";
-        input[y]![mv] = ".";
+      let mv = x;
+      while (true) {
+        mv += 1;
+        if (mv >= input[0]!.length || input[y]![mv] !== ".") break;
+      }
+      if (x !== mv - 1) {
+        input[y]![mv - 1] = "O";
+        input[y]![x] = ".";
       }
     }
   }
@@ -35,10 +43,14 @@ function moveAllTheWaySouth(input: ReturnType<typeof parse>) {
   for (let y = input.length - 1; y >= 0; y--) {
     for (let x = 0; x < input[y]!.length; x++) {
       if (input[y]![x] !== "O") continue;
-      for (let mv = y; mv < input.length - 1; mv++) {
-        if (input[mv + 1]![x] !== ".") break;
-        input[mv + 1]![x] = "O";
-        input[mv]![x] = ".";
+      let mv = y;
+      while (true) {
+        mv += 1;
+        if (mv >= input.length || input[mv]![x] !== ".") break;
+      }
+      if (y !== mv - 1) {
+        input[mv - 1]![x] = "O";
+        input[y]![x] = ".";
       }
     }
   }
@@ -48,10 +60,14 @@ function moveAllTheWayWest(input: ReturnType<typeof parse>) {
   for (let x = 0; x < input[0]!.length; x++) {
     for (let y = 0; y < input.length; y++) {
       if (input[y]![x] !== "O") continue;
-      for (let mv = x; mv >= 1; mv--) {
-        if (input[y]![mv - 1] !== ".") break;
-        input[y]![mv - 1] = "O";
-        input[y]![mv] = ".";
+      let mv = x;
+      while (true) {
+        mv -= 1;
+        if (mv < 0 || input[y]![mv] !== ".") break;
+      }
+      if (x !== mv + 1) {
+        input[y]![mv + 1] = "O";
+        input[y]![x] = ".";
       }
     }
   }
@@ -80,7 +96,7 @@ export function partOne(input: ReturnType<typeof parse>) {
 }
 
 function encode(input: ReturnType<typeof parse>) {
-  return input.map(r => r.join("")).join("\n");
+  return input.map(r => r.join("")).join("");
 }
 
 export function partTwo(input: ReturnType<typeof parse>) {
