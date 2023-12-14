@@ -42,47 +42,12 @@ export function isLegalPosition(
   return true;
 }
 
-type Path = number[]; // start position
-
-export function findOrderedPlacements(
-  springs: string,
-  groups: number[]
-  // boardLength: number
-): number {
-  const springsLength = springs.length;
-  let result = 0;
-
-  function backtrack(start: number, itemIdx: number, path: Path) {
-    // If all items have been placed, add the path to the results
-    if (itemIdx >= groups.length) {
-      // path
-      if (isLegalPosition(springs, groups, path)) {
-        ++result;
-      }
-      return;
-    }
-
-    for (let position = start; position < springsLength; position++) {
-      let itemLength = groups[itemIdx]!;
-      if (position + itemLength <= springsLength) {
-        // Place the item and make a recursive call for the next item
-        path.push(position);
-        backtrack(position + itemLength + 1, itemIdx + 1, path);
-        // Backtrack: Remove the last item placed
-        path.pop();
-      }
-    }
-  }
-
-  backtrack(0, 0, []);
-  return result;
-}
-
 export function partOne(input: ReturnType<typeof parse>) {
   let result = 0;
 
   for (const row of input) {
     const possiblePlacements = countWays(row.springs, row.groups);
+    console.log(row.springs, row.groups);
     result += possiblePlacements;
   }
 
@@ -95,6 +60,7 @@ export function isValidPlacement(
   board: string
 ): boolean {
   if (start + itemLength > board.length) return false;
+  if (start < 0) return false;
   if (board[start - 1] === "#") return false;
   if (board[start + itemLength] === "#") return false;
   for (let i = start; i < start + itemLength; i++) {
@@ -107,35 +73,33 @@ export function countWays(board: string, items: number[]): number {
   const n = board.length;
   const cache: Map<string, number> = new Map();
 
-  function dp(pos: number, itemIndex: number): number {
+  function placeItemsFrom(pos: number, itemIndex: number): number {
     if (itemIndex === items.length) return 1;
     if (pos >= n) return 0;
 
     const key = `${pos}-${itemIndex}`;
-    // if (cache.has(key)) return cache.get(key)!;
+    if (cache.has(key)) return cache.get(key)!;
 
-    let ways = 0;
+    let possibilities = 0;
     const length = items[itemIndex]!;
 
     for (let i = pos; i < n; i++) {
+      // 🚨 we have to fill all the ###
+      // TODO: i think its still failing because we allow wrong shit
+      if (board[i - 1] === "#") break;
+
       if (isValidPlacement(i, length, board)) {
         // Skip an extra space after placing the item
-        ways += dp(i + length + 1, itemIndex + 1);
+        possibilities += placeItemsFrom(i + length + 1, itemIndex + 1);
       }
     }
 
-    console.log(key, ways);
-    cache.set(key, ways);
-    return ways;
+    cache.set(key, possibilities);
+    return possibilities;
   }
 
-  return dp(0, 0);
+  return placeItemsFrom(0, 0);
 }
-
-// Example usage
-// const board = ".??..??...?##.";
-// const items = [1, 1, 3];
-// console.log(countWays(board, items)); // Output: 4
 
 export function partTwo(input: ReturnType<typeof parse>) {
   const newInput = input.map(i => ({
@@ -146,5 +110,9 @@ export function partTwo(input: ReturnType<typeof parse>) {
   return partOne(newInput);
 }
 
-// console.log(partOne(parse(input)));
+console.time("partOne");
+console.log(partOne(parse(input)));
+console.timeEnd("partOne");
+console.time("partTwo");
 // console.log(partTwo(parse(input)));
+console.timeEnd("partTwo");
