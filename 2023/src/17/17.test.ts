@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parse, partOne, partTwo, walk } from "./17";
+import { parse, partOne, partTwo, walkPart1 } from "./17";
 
 const { default: example } = await import("./example.txt");
 
@@ -7,16 +7,16 @@ describe("Day 17", () => {
   describe("walk", () => {
     it("easy path", () => {
       expect(
-        walk({
+        walkPart1({
           board: [
             [1, 1, 1],
             [2, 2, 1],
             [2, 2, 1]
           ],
-          options: [
-            { x: 1, y: 0, dir: "E", cost: 0, prev: [] },
-            { x: 0, y: 1, dir: "S", cost: 0, prev: [] }
-          ],
+          options: new Set([
+            JSON.stringify({ x: 1, y: 0, dir: "E", cost: 0, repeat: 1 }),
+            JSON.stringify({ x: 0, y: 1, dir: "S", cost: 0, repeat: 1 })
+          ]),
           seen: new Map()
         })
       ).toBe(4);
@@ -24,16 +24,16 @@ describe("Day 17", () => {
 
     it("another path", () => {
       expect(
-        walk({
+        walkPart1({
           board: [
             [1, 1, 1, 1, 9, 9, 1, 1, 1, 1],
             [9, 9, 9, 1, 9, 9, 1, 9, 9, 1],
             [9, 9, 9, 1, 1, 1, 1, 9, 9, 1]
           ],
-          options: [
-            { x: 0, y: 1, dir: "S", cost: 0, prev: [] },
-            { x: 1, y: 0, dir: "E", cost: 0, prev: [] }
-          ],
+          options: new Set([
+            JSON.stringify({ x: 0, y: 1, dir: "S", cost: 0, repeat: 1 }),
+            JSON.stringify({ x: 1, y: 0, dir: "E", cost: 0, repeat: 1 })
+          ]),
           seen: new Map()
         })
       ).toBe(15);
@@ -41,16 +41,16 @@ describe("Day 17", () => {
 
     it("small corners", () => {
       expect(
-        walk({
+        walkPart1({
           board: [
             [9, 1, 9, 9, 9, 1, 1, 1, 9, 9],
             [9, 1, 1, 9, 1, 1, 9, 1, 1, 9],
             [9, 9, 1, 1, 1, 9, 9, 9, 1, 1]
           ],
-          options: [
-            { x: 0, y: 1, dir: "S", cost: 0, prev: [] },
-            { x: 1, y: 0, dir: "E", cost: 0, prev: [] }
-          ],
+          options: new Set([
+            JSON.stringify({ x: 0, y: 1, dir: "S", cost: 0, repeat: 1 }),
+            JSON.stringify({ x: 1, y: 0, dir: "E", cost: 0, repeat: 1 })
+          ]),
           seen: new Map()
         })
       ).toBe(15);
@@ -58,32 +58,32 @@ describe("Day 17", () => {
 
     it("cant walk 4", () => {
       expect(
-        walk({
+        walkPart1({
           board: [
             [9, 9, 9, 9, 9, 9, 9, 9, 9, 9],
             [1, 1, 1, 1, 1, 9, 1, 1, 1, 1],
             [9, 9, 9, 2, 1, 1, 1, 9, 9, 1]
           ],
-          options: [
-            { x: 0, y: 1, dir: "S", cost: 0, prev: [] },
-            { x: 1, y: 0, dir: "E", cost: 0, prev: [] }
-          ],
+          options: new Set([
+            JSON.stringify({ x: 0, y: 1, dir: "S", cost: 0, repeat: 1 }),
+            JSON.stringify({ x: 1, y: 0, dir: "E", cost: 0, repeat: 1 })
+          ]),
           seen: new Map()
         })
       ).toBe(14);
 
       it("finds the cheaper path", () => {
         expect(
-          walk({
+          walkPart1({
             board: [
               [9, 1, 1, 1, 9, 9, 9, 9, 9, 9],
               [2, 2, 9, 1, 1, 1, 9, 1, 1, 1],
               [9, 9, 9, 9, 9, 1, 1, 1, 9, 1]
             ],
-            options: [
-              { x: 0, y: 1, dir: "S", cost: 0, prev: [] },
-              { x: 1, y: 0, dir: "E", cost: 0, prev: [] }
-            ],
+            options: new Set([
+              JSON.stringify({ x: 0, y: 1, dir: "S", cost: 0, repeat: 1 }),
+              JSON.stringify({ x: 1, y: 0, dir: "E", cost: 0, repeat: 1 })
+            ]),
             seen: new Map()
           })
         ).toBe(13);
@@ -95,6 +95,6 @@ describe("Day 17", () => {
   });
 
   it("Part Two", () => {
-    expect(true).toBe(true);
+    expect(partTwo(parse(example))).toBe(94);
   });
 });
