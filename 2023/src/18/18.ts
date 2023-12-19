@@ -58,18 +58,19 @@ export function partOne(input: ReturnType<typeof parse>) {
 
   let total = 0;
   for (const [y, row] of positions) {
-    total += calculateRowScore(y, row, positions);
+    const verticalPipes = findVerticalPipes(y, row, positions);
+    total += calculateRowScore(verticalPipes);
   }
   return total;
 }
 
-function calculateRowScore(
+export type VerticalPipeInfo = { pos: number; pipe: VerticalPipe };
+function findVerticalPipes(
   y: number,
   row: Set<number>,
   positions: Map<number, Set<number>>
-): number {
-  // console.log("row", y);
-  let verticalPipes: { pos: number; pipe: VerticalPipe }[] = [];
+): VerticalPipeInfo[] {
+  let verticalPipes: VerticalPipeInfo[] = [];
   for (const x of [...row].sort()) {
     // L case
     if (row.has(x + 1) && positions.get(y + 1)?.has(x)) {
@@ -92,16 +93,28 @@ function calculateRowScore(
       verticalPipes.push({ pipe: "F", pos: x });
     }
   }
-  console.log(JSON.stringify(verticalPipes));
+  return verticalPipes;
+}
 
+export function calculateRowScore(verticalPipes: VerticalPipeInfo[]): number {
   let acc = 0;
   let start = -Infinity;
   let on = false;
   let lastStart: VerticalPipe | "" = "";
   let lastWasZigZag = false;
+  let startZigZagWhileOn = false;
+
+  verticalPipes.sort((a, b) => a.pos - b.pos);
 
   for (let i = 0; i < verticalPipes.length; i++) {
     const p = verticalPipes[i]!;
+    // console.log(
+    //   "acc",
+    //   verticalPipes[i - 1]?.pipe ?? "start",
+    //   acc,
+    //   on,
+    //   startZigZagWhileOn
+    // );
     if (on === false) {
       if (p.pipe === "|" || p.pipe === "L" || p.pipe === "F") {
         on = true;
@@ -115,7 +128,6 @@ function calculateRowScore(
     }
     if (on === true) {
       if (p.pipe === "|") {
-        console.log("end", p.pos, "start", start);
         acc += 1 + p.pos - start;
         start - Infinity;
         lastStart = "";
@@ -124,6 +136,7 @@ function calculateRowScore(
         continue;
       }
       if (p.pipe === "L" || p.pipe === "F") {
+        startZigZagWhileOn = true;
         continue;
       }
       /**
@@ -133,6 +146,17 @@ function calculateRowScore(
        * - L--7...L--J...L--7 => all of it!!!
        */
       if (p.pipe === "7" || p.pipe === "J") {
+        if (startZigZagWhileOn) {
+          if (
+            (verticalPipes[i - 1]!.pipe === "L" && p.pipe === "J") ||
+            (verticalPipes[i - 1]!.pipe === "F" && p.pipe === "7")
+          ) {
+            // console.log("turning off startZigZagWhileON");
+            startZigZagWhileOn = false;
+            lastWasZigZag = false;
+            continue;
+          }
+        }
         if (
           lastStart === "|" ||
           (lastStart === "L" && p.pipe === "J") ||
@@ -142,6 +166,7 @@ function calculateRowScore(
           start = -Infinity;
           on = false;
           lastStart = "";
+          startZigZagWhileOn = false;
           continue;
         }
         // the nightmare cases
@@ -163,7 +188,11 @@ function calculateRowScore(
       }
     }
   }
-  console.log("row", [...row], acc);
+  if (verticalPipes.some(p => p.pipe !== "|")) {
+    // console.log("end: acc", acc, on);
+    // console.log(JSON.stringify(verticalPipes));
+    // console.log("acc", acc);
+  }
   return acc;
 }
 
@@ -181,5 +210,5 @@ export function parseTwo(input: string) {
 
 export function partTwo(input: ReturnType<typeof parse>) {}
 
-// console.log(partOne(parse(input)));
-// console.log(partTwo(parseTwo(input)));
+console.log(partOne(parse(input)));
+console.log(partOne(parseTwo(input)));
