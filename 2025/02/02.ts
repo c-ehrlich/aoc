@@ -18,16 +18,19 @@ function parseInput(input: string): Range[] {
 function solveA(ranges: Range[]) {
   let sum = 0;
   for (const range of ranges) {
-    for (let num = range.start; num <= range.end; num++) {
-      const numStr = num.toString();
-      const l = numStr.length;
-      const halfL = l / 2;
-      if (Number.isInteger(halfL)) {
-        const firstHalf = numStr.slice(0, halfL);
-        const secondHalf = numStr.slice(halfL);
-        if (firstHalf === secondHalf) {
-          sum += num;
-        }
+    for (let halfLen = 1; halfLen <= 8; halfLen++) {
+      const multiplier = 10 ** halfLen + 1;
+      const minHalf = Math.max(
+        10 ** (halfLen - 1),
+        Math.ceil(range.start / multiplier)
+      );
+      const maxHalf = Math.min(
+        10 ** halfLen - 1,
+        Math.floor(range.end / multiplier)
+      );
+      if (minHalf <= maxHalf) {
+        sum +=
+          (((maxHalf - minHalf + 1) * (minHalf + maxHalf)) / 2) * multiplier;
       }
     }
   }
@@ -37,27 +40,30 @@ function solveA(ranges: Range[]) {
 function solveB(ranges: Range[]) {
   let sum = 0;
   for (const range of ranges) {
-    for (let num = range.start; num <= range.end; num++) {
-      if (numberIsRepeatedDigits(num)) {
-        sum += num;
+    const maxLen = range.end.toString().length;
+    for (let patLen = 1; patLen <= maxLen / 2; patLen++) {
+      const patStart = patLen === 1 ? 1 : 10 ** (patLen - 1);
+      const patEnd = 10 ** patLen - 1;
+      for (let pat = patStart; pat <= patEnd; pat++) {
+        let num = pat;
+        while (true) {
+          num = num * 10 ** patLen + pat;
+          if (num > range.end) break;
+          if (num >= range.start) {
+            sum += num;
+          }
+        }
       }
     }
   }
   return sum;
 }
 
-function numberIsRepeatedDigits(num: number) {
-  const numStr = num.toString();
-  const l = numStr.length;
-  const halfL = l / 2;
-  for (let i = 1; i <= halfL; i++) {
-    const segment = numStr.slice(0, i);
-    if (numStr.split(segment).every(i => i === "")) {
-      return true;
-    }
-  }
-  return false;
-}
-
+console.time("A");
 console.log(solveA(parseInput(input)));
+console.timeEnd("A");
+// 0.37ms
+console.time("B");
 console.log(solveB(parseInput(input)));
+console.timeEnd("B");
+// 4.87ms
