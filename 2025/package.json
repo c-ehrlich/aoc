@@ -1,0 +1,17 @@
+{
+  "name": "advent-of-code-bun",
+  "module": "scripts/main.ts",
+  "type": "module",
+  "scripts": {
+    "solve": "bun --watch ./scripts/solve.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "chalk": "^5.3.0",
+    "dedent": "^1.5.1",
+    "prettier": "^3.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
