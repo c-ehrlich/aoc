@@ -39,43 +39,27 @@ export function solveB(input: {
   ingredients: Ingredient[];
 }): number {
   const { ranges } = input;
-  const clearedRanges: Range[] = [];
-  for (const range of ranges) {
-    for (const clearedRange of clearedRanges) {
-      if (overlaps(range.start, clearedRange.start, clearedRange.end)) {
-        range.start = clearedRange.end + 1;
-        if (range.start > range.end) {
-          continue;
-        }
-      }
+  const sorted = ranges.toSorted((a, b) => a.start - b.start);
 
-      if (overlaps(range.end, clearedRange.start, clearedRange.end)) {
-        range.end = clearedRange.start - 1;
-        if (range.start > range.end) {
-          continue;
-        }
-      }
+  const mergedRanges: Range[] = [];
 
-      if (overlaps(clearedRange.start, range.start, range.end)) {
-        clearedRange.start = range.end + 1;
-      }
-
-      if (overlaps(clearedRange.end, range.start, range.end)) {
-        clearedRange.end = range.start - 1;
-      }
-    }
-    if (range.start > range.end) {
+  for (const r of sorted) {
+    if (mergedRanges.length === 0) {
+      mergedRanges.push(r);
       continue;
     }
-    clearedRanges.push(range);
+
+    const last = mergedRanges[mergedRanges.length - 1]!;
+    if (overlaps(r.start, last.start, last.end)) {
+      // merge (we know that the last range is the one with the highest end value)
+      last.end = Math.max(last.end, r.end);
+    } else {
+      // push
+      mergedRanges.push(r);
+    }
   }
 
-  return clearedRanges.reduce((acc, r) => {
-    if (r.start > r.end) {
-      return acc;
-    }
-    return acc + r.end - r.start + 1;
-  }, 0);
+  return mergedRanges.reduce((acc, r) => acc + (r.end - r.start + 1), 0);
 }
 
 console.time("solveA");
@@ -83,4 +67,4 @@ console.log(solveA(parseInput(input)));
 console.timeEnd("solveA"); // 2ms
 console.time("solveB");
 console.log(solveB(parseInput(input)));
-console.timeEnd("solveB"); // 1.5ms
+console.timeEnd("solveB"); // 0.5ms
