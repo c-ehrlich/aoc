@@ -20,34 +20,38 @@ function parseInputA(input: string) {
 }
 
 function parseInputB(input: string) {
-  const isEmptyCol = (col: string[]) => col.every(v => v === " ");
-
-  const arr = input.split("\n").map(r => r.split(""));
-  const rotated = arr[0]!.map((_, colIdx) =>
-    arr.map(row => row[colIdx])
-  ) as string[][];
+  const lines = input.split("\n");
+  const height = lines.length;
+  const width = lines[0]!.length;
 
   let parsedInput: ParsedInput = [];
   let isStart = true;
-  let symbol: "+" | "*" = "+"; // arbitrary init
 
-  for (let i = 0; i < rotated.length; i++) {
-    const col = rotated[i]!;
-
-    if (isStart) {
-      symbol = col!.pop() as any;
-      parsedInput.push({ nums: [], op: symbol });
-      isStart = false;
+  for (let col = 0; col < width; col++) {
+    let isEmpty = true;
+    for (let row = 0; row < height - 1; row++) {
+      if (lines[row]![col] !== " ") {
+        isEmpty = false;
+        break;
+      }
     }
 
-    if (isEmptyCol(col)) {
+    if (isEmpty) {
       isStart = true;
       continue;
     }
 
-    parsedInput[parsedInput.length - 1]!.nums.push(
-      parseInt(col.filter(v => v !== " ").join(""))
-    );
+    if (isStart) {
+      parsedInput.push({ nums: [], op: lines[height - 1]![col] as "+" | "*" });
+      isStart = false;
+    }
+
+    let num = 0;
+    for (let row = 0; row < height - 1; row++) {
+      const c = lines[row]![col]!;
+      if (c !== " ") num = num * 10 + c.charCodeAt(0) - 48; // faster than casting
+    }
+    parsedInput[parsedInput.length - 1]!.nums.push(num);
   }
 
   return parsedInput;
@@ -70,4 +74,4 @@ console.log(solve(parseInputA(input)));
 console.timeEnd("A"); // 2ms
 console.time("B");
 console.log(solve(parseInputB(input)));
-console.timeEnd("B"); // 2ms
+console.timeEnd("B"); // 0.5ms
