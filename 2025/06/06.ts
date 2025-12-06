@@ -56,8 +56,10 @@ function parseInputB(input: string) {
 function solve(input: ParsedInput) {
   let sum = 0;
   for (const row of input) {
-    const eq = row.nums.join(row.op);
-    const res = eval(eq);
+    const res =
+      row.op === "+"
+        ? row.nums.reduce((a, b) => a + b, 0)
+        : row.nums.reduce((a, b) => a * b, 1);
     sum += res;
   }
   return sum;
@@ -65,7 +67,7 @@ function solve(input: ParsedInput) {
 
 console.time("A");
 console.log(solve(parseInputA(input)));
-console.timeEnd("A"); // 3ms
+console.timeEnd("A"); // 2ms
 console.time("B");
 console.log(solve(parseInputB(input)));
-console.timeEnd("B"); // 3ms
+console.timeEnd("B"); // 2ms
