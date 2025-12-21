@@ -89,49 +89,53 @@ export function pushButtonB({
   return res;
 }
 
-function serializeNumberArray(arr: number[]) {
-  return arr.join(",");
-}
-
 export function solveB(input: ReturnType<typeof parseInput>) {
   let sum = 0;
+
   for (const machine of input) {
-    const seenJoltages: Set<string> = new Set();
-
     const { buttons, targetJoltages } = machine;
+    let lowestPresses = Infinity;
 
-    const STARTING_JOLTAGES = targetJoltages; // feels easier to go to 0;
+    function tryAll(
+      buttonIndex: number,
+      remainingTargets: number[],
+      currentPresses: number[],
+      totalPresses: number
+    ) {
+      if (remainingTargets.some(t => t < 0)) return;
+      if (totalPresses >= lowestPresses) return;
 
-    const q = [] as { joltages: number[]; depth: number }[];
+      if (buttonIndex === buttons.length) {
+        if (remainingTargets.every(t => t === 0)) {
+          lowestPresses = totalPresses;
+        }
+        return;
+      }
 
-    for (const button of buttons) {
-      const joltages = pushButtonB({ joltages: STARTING_JOLTAGES, button });
-      q.push({ joltages, depth: 1 });
+      const button = buttons[buttonIndex]!;
+      const maxForThisButton = Math.min(
+        ...button.map(i => remainingTargets[i]!)
+      );
+
+      for (let count = 0; count <= maxForThisButton; count++) {
+        const newTargets = [...remainingTargets];
+        for (const idx of button) {
+          newTargets[idx] -= count;
+        }
+        currentPresses[buttonIndex] = count;
+        tryAll(
+          buttonIndex + 1,
+          newTargets,
+          currentPresses,
+          totalPresses + count
+        );
+      }
     }
 
-    while (q.length) {
-      const i = q.shift()!;
-
-      const serialized = serializeNumberArray(i.joltages);
-      if (seenJoltages.has(serialized)) {
-        continue;
-      }
-
-      if (i.joltages.some(j => j < 0)) {
-        continue;
-      }
-
-      if (i.joltages.every(j => j === 0)) {
-        sum += i.depth;
-        break;
-      }
-
-      for (const button of buttons) {
-        const joltages = pushButtonB({ joltages: i.joltages, button });
-        q.push({ joltages, depth: i.depth + 1 });
-      }
-    }
+    tryAll(0, [...targetJoltages], new Array(buttons.length).fill(0), 0);
+    sum += lowestPresses;
   }
+
   return sum;
 }
 
@@ -139,5 +143,6 @@ export function solveB(input: ReturnType<typeof parseInput>) {
 // console.log(solveA(parseInput(input)));
 // console.timeEnd("A"); // 32ms
 console.time("B");
+// console.log(solveB(parseInput(example)));
 console.log(solveB(parseInput(input)));
 console.timeEnd("B");
